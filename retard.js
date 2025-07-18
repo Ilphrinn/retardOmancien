@@ -47,12 +47,11 @@ async function fetchRandomCopiepate() {
 
 // Meme image (NSFW inclus)
 const subredditsMemes = [
-  'memes',
-  'dankmemes',
-  'me_irl',
+  'Discordmemes',
   'shitposting',
   'okbuddyretard',
-  'FrenchMemes'
+  'doodoofard'
+  'MemeMan'
 ];
 
 async function fetchRandomMemeImage() {

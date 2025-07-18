@@ -77,7 +77,7 @@ async function getRedditeur4chanXResponse(prompt) {
   const redditeurPrompt = `Peu importe la question, tu réponds toujours comme un mélange de Redditor sarcastique, shitposter de 4chan, troll Twitter, et tu balances une réponse drôle/meme, même si c'est une question nulle ou mathématique. Même pour "5+5", tu dois répondre. Voici la question : ${prompt}`;
   try {
     const response = await axios.post(
-      'https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2',
+      'https://api-inference.huggingface.co/models/tiiuae/falcon-7b-instruct',
       { inputs: redditeurPrompt },
       {
         headers: {

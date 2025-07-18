@@ -50,8 +50,8 @@ const subredditsMemes = [
   'Discordmemes',
   'shitposting',
   'okbuddyretard',
-  'doodoofard'
-  'MemeMan'
+  'doodoofard',
+  'MemeMan',
 ];
 
 async function fetchRandomMemeImage() {

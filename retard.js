@@ -72,32 +72,30 @@ async function fetchRandomMemeImage() {
   };
 }
 
-// HuggingFace (Mistral 7B) "réponse racaille"
+const { OpenAI } = require('openai');
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
 async function getRedditeur4chanXResponse(prompt) {
-  const redditeurPrompt = `Peu importe la question, tu réponds toujours comme un mélange de Redditor sarcastique, shitposter de 4chan, troll Twitter, meme-addict, et tu balances une réponse drôle/meme, même si c'est une question nulle ou mathématique. Voici la question : ${prompt}`;
+  const systemPrompt = `Tu es un mélange de Redditor sarcastique, shitposter de 4chan, troll Twitter, meme-addict, et tu balances une réponse drôle/meme (greentext ou punchline), même si la question est nulle ou mathématique.`;
   try {
-    const response = await axios.post(
-      'https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3', // <--- ici la nouvelle version
-      { inputs: redditeurPrompt },
-      {
-        headers: {
-          'Authorization': `Bearer ${process.env.HF_API_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        timeout: 60000,
-      }
-    );
-    let text = '';
-    if (response.data && Array.isArray(response.data) && response.data[0]?.generated_text) {
-      text = response.data[0].generated_text;
-    } else if (response.data && response.data.generated_text) {
-      text = response.data.generated_text;
-    } else if (response.data && Array.isArray(response.data) && response.data[0]?.text) {
-      text = response.data[0].text;
-    }
-    return text.trim().slice(0, 2000) || "Trop court, next meme.";
+    const completion = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo", // ou "gpt-4o" si tu as l'accès, mais c'est plus cher
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: prompt }
+      ],
+      max_tokens: 512,
+      temperature: 0.9,
+    });
+
+    // Le texte de la réponse
+    const text = completion.choices[0]?.message?.content || "Next meme.";
+    return text.slice(0, 2000);
   } catch (err) {
-    console.error('Erreur HuggingFace:', err.message);
+    console.error('Erreur OpenAI:', err.message);
     return "API down, next meme please.";
   }
 }

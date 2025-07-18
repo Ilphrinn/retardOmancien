@@ -31,7 +31,7 @@ const client = new Client({
 // Copiepate (texte, NSFW inclus)
 async function fetchRandomCopiepate() {
   try {
-    const posts = await reddit.getSubreddit('CopiePates').getHot({ limit: 5000 });
+    const posts = await reddit.getSubreddit('CopiePates').getHot({ limit: 500 });
     const validPosts = posts.filter(post =>
       post.selftext &&
       post.selftext.length > 30 &&
@@ -57,7 +57,7 @@ const subredditsMemes = [
 
 async function fetchRandomMemeImage() {
   const sub = subredditsMemes[Math.floor(Math.random() * subredditsMemes.length)];
-  const posts = await reddit.getSubreddit(sub).getHot({ limit: 5000 });
+  const posts = await reddit.getSubreddit(sub).getHot({ limit: 500 });
   const images = posts.filter(
     post =>
       post.url &&
@@ -100,8 +100,8 @@ N’utilise jamais un ton académique ni robotique, reste spontané en permanenc
         { role: "system", content: systemPrompt },
         { role: "user", content: prompt }
       ],
-      max_tokens: 512,
-      temperature: 0.9,
+      max_tokens: 1000,
+      temperature: 0.7,
     });
     const text = completion.choices[0]?.message?.content || "Next meme.";
     return text.slice(0, 2000);

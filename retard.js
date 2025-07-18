@@ -101,8 +101,7 @@ async function getRedditeur4chanXResponse(prompt) {
 
 client.on('messageCreate', async message => {
   if (message.author.bot) return;
-  const chance = 0.01; // 0.10 = 10%, 0.25 = 25%, etc.
-
+  
   // Copiepate classique
   if (message.content.toLowerCase().includes('copiepate')) {
     const copypasta = await fetchRandomCopiepate();
@@ -119,6 +118,7 @@ client.on('messageCreate', async message => {
     message.channel.send(curseOfRa);
   }
 
+  const chance = 0.05; // 0.10 = 10%, 0.25 = 25%, etc.
   if (Math.random() < chance) {
     message.reply("Ta gueule");
     return; // Pour éviter d'autres réponses sur ce message si besoin

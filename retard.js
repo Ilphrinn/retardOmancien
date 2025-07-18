@@ -1,4 +1,11 @@
 // https://discord.com/oauth2/authorize?client_id=1395669262986907648&scope=bot&permissions=68608
+function splitMessage(str, size = 2000) {
+  const parts = [];
+  for (let i = 0; i < str.length; i += size) {
+    parts.push(str.slice(i, i + size));
+  }
+  return parts;
+}
 
 const { Client, GatewayIntentBits } = require('discord.js');
 const Snoowrap = require('snoowrap');

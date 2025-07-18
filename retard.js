@@ -37,11 +37,22 @@ async function fetchRandomCopiepate() {
 client.on('messageCreate', async message => {
   if (message.author.bot) return; // Ignore les autres bots
 
-  console.log(`Salon: ${message.channel.name} - Message: ${message.content}`); // <-- Ajoute cette ligne
-
   if (message.content.toLowerCase().includes('copiepate')) {
     const copypasta = await fetchRandomCopiepate();
-    message.channel.send(copypasta);
+    // Fonction utilitaire pour découper en morceaux de 2000 caractères
+    function splitMessage(str, size = 2000) {
+      const parts = [];
+      for (let i = 0; i < str.length; i += size) {
+        parts.push(str.slice(i, i + size));
+      }
+    return parts;
+}
+
+// À la place du simple send :
+const parts = splitMessage(copypasta);
+for (const part of parts) {
+  await message.channel.send(part);
+}
   }
 });
 

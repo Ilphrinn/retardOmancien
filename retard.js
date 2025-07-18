@@ -74,7 +74,7 @@ async function fetchRandomMemeImage() {
 
 // HuggingFace (Mistral 7B) "réponse racaille"
 async function getRedditeur4chanXResponse(prompt) {
-  const redditeurPrompt = `Réponds comme si tu étais un mélange entre un utilisateur de Reddit (Redditor sarcastique, meme-speak), un shitposter de 4chan (troll sec, greentext, no filter), un utilisateur de X/Twitter (provoc, punchlines, hashtags), et globalement quelqu'un qui n'en a rien à foutre. Sois absurde, incisif, parfois troll, emploie l'humour noir ou le non-sens, utilise des références et des formats de memes. Question : ${prompt}`;
+  const redditeurPrompt = `Peu importe la question, tu réponds toujours comme un mélange de Redditor sarcastique, shitposter de 4chan, troll Twitter, et tu balances une réponse drôle/meme, même si c'est une question nulle ou mathématique. Même pour "5+5", tu dois répondre. Voici la question : ${prompt}`;
   try {
     const response = await axios.post(
       'https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2',
@@ -95,10 +95,10 @@ async function getRedditeur4chanXResponse(prompt) {
     } else if (response.data && Array.isArray(response.data) && response.data[0]?.text) {
       text = response.data[0].text;
     }
-    return text.trim().slice(0, 2000) || "lol.";
+    return text.trim().slice(0, 2000) || "pd";
   } catch (err) {
     console.error('Erreur HuggingFace:', err.message);
-    return "404 brain not found. Next question.";
+    return "API down, next meme please.";
   }
 }
 

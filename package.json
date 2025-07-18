@@ -1,14 +1,15 @@
 {
   "name": "retardomancien",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "retard.js",
   "scripts": {
+    "start": "node retard.js"
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "he stoopid",
   "dependencies": {
     "discord.js": "^14.21.0",
     "snoowrap": "^1.23.0"

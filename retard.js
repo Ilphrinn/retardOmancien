@@ -101,7 +101,7 @@ async function getRedditeur4chanXResponse(prompt) {
 
 client.on('messageCreate', async message => {
   if (message.author.bot) return;
-  const chance = 1; // 0.10 = 10%, 0.25 = 25%, etc.
+  const chance = 0.01; // 0.10 = 10%, 0.25 = 25%, etc.
 
   // Copiepate classique
   if (message.content.toLowerCase().includes('copiepate')) {

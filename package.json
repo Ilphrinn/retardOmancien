@@ -10,6 +10,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "axios": "^1.10.0",
     "discord.js": "^14.21.0",
     "snoowrap": "^1.23.0"
   }

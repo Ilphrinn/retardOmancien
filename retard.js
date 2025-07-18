@@ -1,7 +1,14 @@
-// https://discord.com/oauth2/authorize?client_id=1395669262986907648&scope=bot&permissions=68608
-
 const { Client, GatewayIntentBits } = require('discord.js');
 const Snoowrap = require('snoowrap');
+const axios = require('axios');
+
+function splitMessage(str, size = 2000) {
+  const parts = [];
+  for (let i = 0; i < str.length; i += size) {
+    parts.push(str.slice(i, i + size));
+  }
+  return parts;
+}
 
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
 
@@ -13,15 +20,21 @@ const reddit = new Snoowrap({
   password: process.env.REDDIT_PASSWORD
 });
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
+const client = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent
+  ]
+});
 
-// Fonction qui prend un post random de r/CopiePates
+// Copiepate (texte, NSFW inclus)
 async function fetchRandomCopiepate() {
   try {
     const posts = await reddit.getSubreddit('CopiePates').getHot({ limit: 50 });
     const validPosts = posts.filter(post =>
       post.selftext &&
-      post.selftext.length > 30 && // Filtre les trop courts
+      post.selftext.length > 30 &&
       !post.stickied
     );
     if (validPosts.length === 0) return "Rien trouvé sur r/CopiePates !";
@@ -33,13 +46,102 @@ async function fetchRandomCopiepate() {
   }
 }
 
-// Quand le bot reçoit une commande dans un salon
-client.on('messageCreate', async message => {
-  if (message.author.bot) return; // Ignore les autres bots
+// Meme image (NSFW inclus)
+const subredditsMemes = [
+  'Discordmemes',
+  'shitposting',
+  'okbuddyretard',
+  'doodoofard',
+  'MemeMan',
+];
 
-  if (message.content === 'copiepate') {
+async function fetchRandomMemeImage() {
+  const sub = subredditsMemes[Math.floor(Math.random() * subredditsMemes.length)];
+  const posts = await reddit.getSubreddit(sub).getHot({ limit: 50 });
+  const images = posts.filter(
+    post =>
+      post.url &&
+      (post.url.endsWith('.jpg') || post.url.endsWith('.png') || post.url.endsWith('.jpeg') || post.url.endsWith('.gif'))
+  );
+  if (images.length === 0) return null;
+  const random = images[Math.floor(Math.random() * images.length)];
+  return {
+    url: random.url,
+    title: random.title,
+    subreddit: sub
+  };
+}
+
+// HuggingFace (Mistral 7B) "réponse racaille"
+async function getRedditeur4chanXResponse(prompt) {
+  const redditeurPrompt = `Réponds comme si tu étais un mélange entre un utilisateur de Reddit (Redditor sarcastique, meme-speak), un shitposter de 4chan (troll sec, greentext, no filter), un utilisateur de X/Twitter (provoc, punchlines, hashtags), et globalement quelqu'un qui n'en a rien à foutre. Sois absurde, incisif, parfois troll, emploie l'humour noir ou le non-sens, utilise des références et des formats de memes. Question : ${prompt}`;
+  try {
+    const response = await axios.post(
+      'https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2',
+      { inputs: redditeurPrompt },
+      {
+        headers: {
+          'Authorization': `Bearer ${process.env.HF_API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        timeout: 60000,
+      }
+    );
+    let text = '';
+    if (response.data && Array.isArray(response.data) && response.data[0]?.generated_text) {
+      text = response.data[0].generated_text;
+    } else if (response.data && response.data.generated_text) {
+      text = response.data.generated_text;
+    } else if (response.data && Array.isArray(response.data) && response.data[0]?.text) {
+      text = response.data[0].text;
+    }
+    return text.trim().slice(0, 2000) || "lol.";
+  } catch (err) {
+    console.error('Erreur HuggingFace:', err.message);
+    return "404 brain not found. Next question.";
+  }
+}
+
+client.on('messageCreate', async message => {
+  if (message.author.bot) return;
+
+  // Copiepate classique
+  if (message.content.toLowerCase().includes('copiepate')) {
     const copypasta = await fetchRandomCopiepate();
-    message.channel.send(copypasta);
+    const parts = splitMessage(copypasta);
+    for (const part of parts) {
+      await message.channel.send(part);
+    }
+    return;
+  }
+
+  // Invocation de meme
+  if (message.content.toLowerCase().includes('invocation de meme')) {
+    const meme = await fetchRandomMemeImage();
+    if (!meme) {
+      await message.channel.send("Aucun meme trouvé !");
+    } else {
+      await message.channel.send({
+        embeds: [{
+          title: meme.title,
+          image: { url: meme.url },
+          footer: { text: `r/${meme.subreddit}` }
+        }]
+      });
+    }
+    return;
+  }
+
+
+  if (message.mentions.has(client.user)) {
+    const prompt = message.content.replace(`<@${client.user.id}>`, '').trim();
+    if (prompt.length === 0) return;
+    await message.channel.send("Hold my beer...");
+    const shitpostResponse = await getRedditeur4chanXResponse(prompt);
+    const parts = splitMessage(shitpostResponse);
+    for (const part of parts) {
+      await message.channel.send(part);
+    }
   }
 });
 

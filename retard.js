@@ -1,6 +1,5 @@
 const { Client, GatewayIntentBits } = require('discord.js');
 const Snoowrap = require('snoowrap');
-const axios = require('axios');
 
 function splitMessage(str, size = 2000) {
   const parts = [];

@@ -31,7 +31,7 @@ const client = new Client({
 // Copiepate (texte, NSFW inclus)
 async function fetchRandomCopiepate() {
   try {
-    const posts = await reddit.getSubreddit('CopiePates').getHot({ limit: 50 });
+    const posts = await reddit.getSubreddit('CopiePates').getHot({ limit: 5000 });
     const validPosts = posts.filter(post =>
       post.selftext &&
       post.selftext.length > 30 &&
@@ -57,7 +57,7 @@ const subredditsMemes = [
 
 async function fetchRandomMemeImage() {
   const sub = subredditsMemes[Math.floor(Math.random() * subredditsMemes.length)];
-  const posts = await reddit.getSubreddit(sub).getHot({ limit: 50 });
+  const posts = await reddit.getSubreddit(sub).getHot({ limit: 5000 });
   const images = posts.filter(
     post =>
       post.url &&

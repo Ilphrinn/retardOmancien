@@ -31,14 +31,26 @@ const client = new Client({
 // Copiepate (texte, NSFW inclus)
 async function fetchRandomCopiepate() {
   try {
-    const posts = await reddit.getSubreddit('CopiePates').getHot({ limit: 500 });
-    const validPosts = posts.filter(post =>
+    // On choisit aléatoirement une méthode de tri
+    const modes = [
+      reddit.getSubreddit('CopiePates').getHot({ limit: 30 }),
+      reddit.getSubreddit('CopiePates').getTop({ time: 'month', limit: 30 }),
+      reddit.getSubreddit('CopiePates').getTop({ time: 'all', limit: 30 }),
+      reddit.getSubreddit('CopiePates').getNew({ limit: 30 })
+    ];
+    // Prend 2 listes au hasard et les concatène
+    const allResults = await Promise.all([
+      modes[Math.floor(Math.random() * modes.length)],
+      modes[Math.floor(Math.random() * modes.length)]
+    ]);
+    // Aplatis les tableaux et filtre les bons posts
+    const posts = allResults.flat().filter(post =>
       post.selftext &&
       post.selftext.length > 30 &&
       !post.stickied
     );
-    if (validPosts.length === 0) return "Rien trouvé sur r/CopiePates !";
-    const random = validPosts[Math.floor(Math.random() * validPosts.length)];
+    if (posts.length === 0) return "Rien trouvé sur r/CopiePates !";
+    const random = posts[Math.floor(Math.random() * posts.length)];
     return random.selftext;
   } catch (err) {
     console.error("Erreur Reddit:", err);
@@ -57,8 +69,20 @@ const subredditsMemes = [
 
 async function fetchRandomMemeImage() {
   const sub = subredditsMemes[Math.floor(Math.random() * subredditsMemes.length)];
-  const posts = await reddit.getSubreddit(sub).getHot({ limit: 500 });
-  const images = posts.filter(
+  const methods = [
+    reddit.getSubreddit(sub).getHot({ limit: 30 }),
+    reddit.getSubreddit(sub).getTop({ time: 'month', limit: 30 }),
+    reddit.getSubreddit(sub).getTop({ time: 'all', limit: 30 }),
+    reddit.getSubreddit(sub).getNew({ limit: 30 }),
+    reddit.getSubreddit(sub).getRising({ limit: 30 })
+  ];
+  // Tire 2 méthodes au hasard et concatène leurs résultats
+  const allResults = await Promise.all([
+    methods[Math.floor(Math.random() * methods.length)],
+    methods[Math.floor(Math.random() * methods.length)]
+  ]);
+  // Mélange tout et filtre les images valides
+  const images = allResults.flat().filter(
     post =>
       post.url &&
       (post.url.endsWith('.jpg') || post.url.endsWith('.png') || post.url.endsWith('.jpeg') || post.url.endsWith('.gif'))

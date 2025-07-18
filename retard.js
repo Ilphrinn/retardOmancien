@@ -132,7 +132,6 @@ client.on('messageCreate', async message => {
     return;
   }
 
-
   if (message.mentions.has(client.user)) {
     const prompt = message.content.replace(`<@${client.user.id}>`, '').trim();
     if (prompt.length === 0) return;

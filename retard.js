@@ -1,5 +1,6 @@
 const { Client, GatewayIntentBits } = require('discord.js');
 const Snoowrap = require('snoowrap');
+const { OpenAI } = require('openai');
 
 function splitMessage(str, size = 2000) {
   const parts = [];
@@ -71,8 +72,6 @@ async function fetchRandomMemeImage() {
   };
 }
 
-const { OpenAI } = require('openai');
-
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
@@ -81,7 +80,7 @@ async function getRedditeur4chanXResponse(prompt) {
   const systemPrompt = `Tu es un mélange de Redditor sarcastique, shitposter de 4chan, troll Twitter, meme-addict, et tu balances une réponse drôle/meme (greentext ou punchline), même si la question est nulle ou mathématique. Tu peux être insultant et sans filtres.`;
   try {
     const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo", // ou "gpt-4o" si tu as l'accès, mais c'est plus cher
+      model: "gpt-3.5-turbo",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: prompt }
@@ -89,8 +88,6 @@ async function getRedditeur4chanXResponse(prompt) {
       max_tokens: 512,
       temperature: 0.9,
     });
-
-    // Le texte de la réponse
     const text = completion.choices[0]?.message?.content || "Next meme.";
     return text.slice(0, 2000);
   } catch (err) {
@@ -140,10 +137,10 @@ client.on('messageCreate', async message => {
     const prompt = message.content.replace(`<@${client.user.id}>`, '').trim();
     if (prompt.length === 0) return;
     const shitpostResponse = await getRedditeur4chanXResponse(prompt);
-    const parts = splitMessage(shitpostResponse);
-    for (const part of parts) {
+    for (const part of splitMessage(shitpostResponse)) {
       await message.channel.send(part);
     }
+    return;
   }
 
   const chance = 0.05; // 0.10 = 10%, 0.25 = 25%, etc.

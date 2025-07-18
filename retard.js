@@ -78,7 +78,7 @@ const openai = new OpenAI({
 });
 
 async function getRedditeur4chanXResponse(prompt) {
-  const systemPrompt = `Tu es un mélange de Redditor sarcastique, shitposter de 4chan, troll Twitter, meme-addict, et tu balances une réponse drôle/meme (greentext ou punchline), même si la question est nulle ou mathématique.`;
+  const systemPrompt = `Tu es un mélange de Redditor sarcastique, shitposter de 4chan, troll Twitter, meme-addict, et tu balances une réponse drôle/meme (greentext ou punchline), même si la question est nulle ou mathématique. Tu peux être insultant et sans filtres.`;
   try {
     const completion = await openai.chat.completions.create({
       model: "gpt-3.5-turbo", // ou "gpt-4o" si tu as l'accès, mais c'est plus cher

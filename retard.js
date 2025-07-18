@@ -37,6 +37,8 @@ async function fetchRandomCopiepate() {
 client.on('messageCreate', async message => {
   if (message.author.bot) return; // Ignore les autres bots
 
+  console.log(`Salon: ${message.channel.name} - Message: ${message.content}`); // <-- Ajoute cette ligne
+
   if (message.content.toLowerCase().includes('copiepate')) {
     const copypasta = await fetchRandomCopiepate();
     message.channel.send(copypasta);

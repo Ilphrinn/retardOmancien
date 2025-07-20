@@ -156,48 +156,25 @@ client.on('messageCreate', async message => {
 
   if (message.content.toLowerCase() === 'ascii') {
     try {
-      // Page aléatoire entre 1 et 53
-      const randomPage = Math.floor(Math.random() * 53) + 1;
+      // Nombre total de pages connues à l'avance (à ajuster si besoin)
+      const maxPages = 17;
+      const randomPage = Math.floor(Math.random() * maxPages) + 1;
       const url = `https://www.twitchquotes.com/copypastas/ascii-art?page=${randomPage}`;
 
       const response = await axios.get(url);
       const $ = cheerio.load(response.data);
 
-      // Récupère tous les blocks d'ASCII
-      const asciiBlocks = $('.main-content .content-box .content').map((i, el) =>
-        $(el).text().trim()
-      ).get();
+      const asciiBlocks = $(".content").toArray().map(div =>
+        $(div).find(".quote .message").text().trim()
+      ).filter(text => text.length > 0);
 
-      if (asciiBlocks.length === 0) {
-        return message.channel.send('Aucun ASCII trouvé sur cette page.');
-      }
+      if (asciiBlocks.length === 0) return "Aucun ASCII trouvé sur cette page.";
 
-      // Choisit un ASCII au hasard
-      const ascii = asciiBlocks[Math.floor(Math.random() * asciiBlocks.length)];
-
-      // Envoie en plusieurs morceaux si nécessaire
-      const lines = ascii.split('\n');
-      let chunk = '';
-
-      for (const line of lines) {
-        // Ajoute la ligne au chunk courant
-        if ((chunk + '\n' + line).length < 1990) {
-          chunk += line + '\n';
-        } else {
-          // Envoie le chunk actuel
-          await message.channel.send(`\`\`\`\n${chunk.trimEnd()}\n\`\`\``);
-          chunk = line + '\n'; // recommence un nouveau chunk
-        }
-      }
-
-      // Envoie le dernier morceau s’il en reste
-      if (chunk.trim()) {
-        await message.channel.send(`\`\`\`\n${chunk.trimEnd()}\n\`\`\``);
-      }
-
-    } catch (error) {
-      console.error(error);
-      message.channel.send('Erreur lors de la récupération de l\'ASCII.');
+      const randomAscii = asciiBlocks[Math.floor(Math.random() * asciiBlocks.length)];
+      return randomAscii;
+    } catch (err) {
+      console.error("Erreur scraping TwitchQuotes:", err.message);
+      return "Erreur lors du scraping de TwitchQuotes.";
     }
   }
 

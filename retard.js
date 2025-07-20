@@ -157,7 +157,7 @@ client.on('messageCreate', async message => {
   if (message.content.toLowerCase() === 'ascii') {
     try {
       // Nombre total de pages connues à l'avance (à ajuster si besoin)
-      const maxPages = 17;
+      const maxPages = 53;
       const randomPage = Math.floor(Math.random() * maxPages) + 1;
       const url = `https://www.twitchquotes.com/copypastas/ascii-art?page=${randomPage}`;
 

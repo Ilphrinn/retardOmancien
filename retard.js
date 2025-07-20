@@ -1,6 +1,7 @@
 const { Client, GatewayIntentBits } = require('discord.js');
 const Snoowrap = require('snoowrap');
 const { OpenAI } = require('openai');
+const cheerio = require('cheerio');
 
 function splitMessage(str, size = 2000) {
   const parts = [];
@@ -26,6 +27,10 @@ const client = new Client({
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent
   ]
+});
+
+client.once('ready', () => {
+  console.log(`Going Dank`);
 });
 
 // Copiepate (texte, NSFW inclus)
@@ -146,6 +151,53 @@ client.on('messageCreate', async message => {
       await message.channel.send(part);
     }
     return;
+  }
+
+  if (message.content.toLowerCase() === 'ascii') {
+    try {
+      // Page aléatoire entre 1 et 53
+      const randomPage = Math.floor(Math.random() * 53) + 1;
+      const url = `https://www.twitchquotes.com/copypastas/ascii-art?page=${randomPage}`;
+
+      const response = await axios.get(url);
+      const $ = cheerio.load(response.data);
+
+      // Récupère tous les blocks d'ASCII
+      const asciiBlocks = $('.main-content .content-box .content').map((i, el) =>
+        $(el).text().trim()
+      ).get();
+
+      if (asciiBlocks.length === 0) {
+        return message.channel.send('Aucun ASCII trouvé sur cette page.');
+      }
+
+      // Choisit un ASCII au hasard
+      const ascii = asciiBlocks[Math.floor(Math.random() * asciiBlocks.length)];
+
+      // Envoie en plusieurs morceaux si nécessaire
+      const lines = ascii.split('\n');
+      let chunk = '';
+
+      for (const line of lines) {
+        // Ajoute la ligne au chunk courant
+        if ((chunk + '\n' + line).length < 1990) {
+          chunk += line + '\n';
+        } else {
+          // Envoie le chunk actuel
+          await message.channel.send(`\`\`\`\n${chunk.trimEnd()}\n\`\`\``);
+          chunk = line + '\n'; // recommence un nouveau chunk
+        }
+      }
+
+      // Envoie le dernier morceau s’il en reste
+      if (chunk.trim()) {
+        await message.channel.send(`\`\`\`\n${chunk.trimEnd()}\n\`\`\``);
+      }
+
+    } catch (error) {
+      console.error(error);
+      message.channel.send('Erreur lors de la récupération de l\'ASCII.');
+    }
   }
 
   if (message.content.toLowerCase().includes("curse of ra") &&!message.author.bot) {

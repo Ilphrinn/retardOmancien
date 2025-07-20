@@ -196,7 +196,7 @@ client.on('messageCreate', async message => {
       }
 
       const random = values[Math.floor(Math.random() * values.length)];
-      const parts = splitMessage(random, 1990);
+      const parts = splitMessage(random, 2000);
       for (const part of parts) {
         await message.channel.send(part); // pas de bloc code ici
       }

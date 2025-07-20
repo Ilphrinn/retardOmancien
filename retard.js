@@ -191,7 +191,7 @@ client.on('messageCreate', async message => {
       }
 
       if (values.length === 0) {
-        await message.reply("Gneuuuuu j'ai pas trouvééééé :(");
+        await message.reply("Gneuuuuu j'ai pas trouvééééé :animeautism:");
         return;
       }
 

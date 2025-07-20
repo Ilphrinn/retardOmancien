@@ -156,38 +156,49 @@ client.on('messageCreate', async message => {
 
   if (message.content.toLowerCase().includes("ascii")) {
     try {
+      const maxTries = 5;
       const maxPages = 53;
-      const randomPage = Math.floor(Math.random() * maxPages) + 1;
-      const url = `https://www.twitchquotes.com/copypastas/ascii-art?page=${randomPage}`;
+      let attempt = 0;
+      let values = [];
 
-      const browser = await puppeteer.launch({
-        headless: "new", // ou "true" si ça bug
-        args: ['--no-sandbox', '--disable-setuid-sandbox'] // important sur Railway si tu tentes plus tard
-      });
+      while (values.length === 0 && attempt < maxTries) {
+        attempt++;
+        const randomPage = Math.floor(Math.random() * maxPages) + 1;
+        const url = `https://www.twitchquotes.com/copypastas/ascii-art?page=${randomPage}`;
 
-      const page = await browser.newPage();
-      await page.setUserAgent("Mozilla/5.0"); // imite un vrai navigateur
-      await page.goto(url, { waitUntil: "domcontentloaded" });
+        const browser = await puppeteer.launch({
+          headless: "new",
+          args: ['--no-sandbox', '--disable-setuid-sandbox']
+        });
 
-      await page.waitForSelector('button.copy_to_clipboard_js', { timeout: 5000 });
+        const page = await browser.newPage();
+        await page.setUserAgent("Mozilla/5.0");
+        await page.goto(url, { waitUntil: "domcontentloaded" });
 
-      const values = await page.$$eval('button.copy_to_clipboard_js', buttons =>
-        buttons
-          .map(btn => btn.getAttribute("data-clipboard-text")?.trim())
-          .filter(Boolean)
-      );
+        try {
+          await page.waitForSelector('button.copy_to_clipboard_js', { timeout: 5000 });
 
-      await browser.close();
+          values = await page.$$eval('button.copy_to_clipboard_js', buttons =>
+            buttons
+              .map(btn => btn.getAttribute("data-clipboard-text")?.trim())
+              .filter(text => text && text.length > 30)
+          );
+        } catch (err) {
+          console.warn(`Essai ${attempt} : aucun bouton détecté.`);
+        }
+
+        await browser.close();
+      }
 
       if (values.length === 0) {
-        await message.reply("Aucun ASCII trouvé.");
+        await message.reply("Gneuuuuu j'ai pas trouvééééé :(");
         return;
       }
 
       const random = values[Math.floor(Math.random() * values.length)];
       const parts = splitMessage(random, 1990);
       for (const part of parts) {
-        await message.channel.send(part);
+        await message.channel.send(part); // pas de bloc code ici
       }
 
     } catch (err) {
@@ -197,7 +208,6 @@ client.on('messageCreate', async message => {
 
     return;
   }
-
 
   if (message.content.toLowerCase().includes("curse of ra") &&!message.author.bot) {
   const curseOfRa = `# CURSE OF RA

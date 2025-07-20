@@ -155,39 +155,35 @@ client.on('messageCreate', async message => {
   }
 
   if (message.content.toLowerCase().includes("ascii")) {
-    try {
-      const maxPages = 53;
-      const randomPage = Math.floor(Math.random() * maxPages) + 1;
-      const url = `https://www.twitchquotes.com/copypastas/ascii-art?page=${randomPage}`;
+    const maxPages = 53; // tu peux ajuster si tu veux
+    const randomPage = Math.floor(Math.random() * maxPages) + 1;
+    const url = `https://www.twitchquotes.com/copypastas/ascii-art?page=${randomPage}`;
 
+    try {
       const response = await axios.get(url, {
         headers: {
-          "User-Agent": "Mozilla/5.0" // important pour éviter un blocage
+          "User-Agent": "Mozilla/5.0"
         }
       });
 
       const $ = cheerio.load(response.data);
 
-      const asciiBlocks = $("button.copy_to_clipboard_js")
-        .map((i, el) => $(el).attr("data-clipboard-text")?.trim())
-        .get()
-        .filter(text => text && text.length > 0);
+      const buttons = $('button.copy_to_clipboard_js');
+      const values = buttons.map((i, el) =>
+        $(el).attr('data-clipboard-text')?.trim()
+      ).get().filter(Boolean);
 
-      if (asciiBlocks.length === 0) {
-        return message.reply("Aucun ASCII trouvé sur cette page.");
+      if (values.length === 0) {
+        throw new Error("Aucun contenu trouvé.");
       }
 
-      const randomAscii = asciiBlocks[Math.floor(Math.random() * asciiBlocks.length)];
+      const random = values[Math.floor(Math.random() * values.length)];
+      return random;
 
-      const parts = splitMessage(randomAscii, 1990);
-      for (const part of parts) {
-        await message.channel.send("```" + part + "```");
-      }
     } catch (err) {
-      console.error("Erreur dans la commande ASCII :", err);
-      message.reply("Erreur lors du scraping ASCII.");
+      console.error("Erreur scraping :", err.message);
+      return null;
     }
-    return;
   }
 
 

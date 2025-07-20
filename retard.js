@@ -1,6 +1,7 @@
 const { Client, GatewayIntentBits } = require('discord.js');
 const Snoowrap = require('snoowrap');
 const { OpenAI } = require('openai');
+const axios = require('axios');
 const cheerio = require('cheerio');
 
 function splitMessage(str, size = 2000) {

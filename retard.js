@@ -167,6 +167,7 @@ client.on('messageCreate', async message => {
       });
 
       const $ = cheerio.load(response.data);
+      console.log(response.data.slice(0, 1000));
 
       const buttons = $('button.copy_to_clipboard_js');
       const values = buttons.map((i, el) =>

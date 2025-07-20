@@ -2,7 +2,7 @@ const { Client, GatewayIntentBits } = require('discord.js');
 const Snoowrap = require('snoowrap');
 const { OpenAI } = require('openai');
 const axios = require('axios');
-const cheerio = require('cheerio');
+const puppeteer = require('puppeteer');
 
 function splitMessage(str, size = 2000) {
   const parts = [];
@@ -155,36 +155,47 @@ client.on('messageCreate', async message => {
   }
 
   if (message.content.toLowerCase().includes("ascii")) {
-    const maxPages = 53; // tu peux ajuster si tu veux
-    const randomPage = Math.floor(Math.random() * maxPages) + 1;
-    const url = `https://www.twitchquotes.com/copypastas/ascii-art?page=${randomPage}`;
-
     try {
-      const response = await axios.get(url, {
-        headers: {
-          "User-Agent": "Mozilla/5.0"
-        }
+      const maxPages = 53;
+      const randomPage = Math.floor(Math.random() * maxPages) + 1;
+      const url = `https://www.twitchquotes.com/copypastas/ascii-art?page=${randomPage}`;
+
+      const browser = await puppeteer.launch({
+        headless: "new", // ou "true" si ça bug
+        args: ['--no-sandbox', '--disable-setuid-sandbox'] // important sur Railway si tu tentes plus tard
       });
 
-      const $ = cheerio.load(response.data);
-      console.log(response.data.slice(0, 1000));
+      const page = await browser.newPage();
+      await page.setUserAgent("Mozilla/5.0"); // imite un vrai navigateur
+      await page.goto(url, { waitUntil: "domcontentloaded" });
 
-      const buttons = $('button.copy_to_clipboard_js');
-      const values = buttons.map((i, el) =>
-        $(el).attr('data-clipboard-text')?.trim()
-      ).get().filter(Boolean);
+      await page.waitForSelector('button.copy_to_clipboard_js', { timeout: 5000 });
+
+      const values = await page.$$eval('button.copy_to_clipboard_js', buttons =>
+        buttons
+          .map(btn => btn.getAttribute("data-clipboard-text")?.trim())
+          .filter(Boolean)
+      );
+
+      await browser.close();
 
       if (values.length === 0) {
-        throw new Error("Aucun contenu trouvé.");
+        await message.reply("Aucun ASCII trouvé.");
+        return;
       }
 
       const random = values[Math.floor(Math.random() * values.length)];
-      return random;
+      const parts = splitMessage(random, 1990);
+      for (const part of parts) {
+        await message.channel.send("```" + part + "```");
+      }
 
     } catch (err) {
-      console.error("Erreur scraping :", err.message);
-      return null;
+      console.error("Erreur Puppeteer ASCII :", err.message);
+      await message.reply("Erreur lors du chargement de l'ASCII.");
     }
+
+    return;
   }
 
 

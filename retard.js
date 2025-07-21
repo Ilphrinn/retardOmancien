@@ -83,7 +83,7 @@ async function fetchRandomCopiepate() {
       !sentCopiepates.has(post.selftext)
   );
 
-  if (texts.length === 0) return "Rien trouvé sur r/CopiePates !";
+  if (texts.length === 0) return "Gneuuuuu j'ai pas trouvééééé :animeautism:";
 
   const random = texts[Math.floor(Math.random() * texts.length)];
 
@@ -298,7 +298,7 @@ client.on('messageCreate', async message => {
   if (message.content.toLowerCase().includes('invocation de meme')) {
     const meme = await fetchRandomMemeImage();
     if (!meme) {
-      await message.channel.send("Aucun meme trouvé !");
+      await message.channel.send("Gneuuuuu j'ai pas trouvééééé :animeautism:");
     } else {
       await message.channel.send({
         embeds: [{

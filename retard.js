@@ -35,33 +35,65 @@ client.once('ready', () => {
 });
 
 // Copiepate (texte, NSFW inclus)
+const sentCopiepates = new Set();
+const MAX_COPIE_HISTORY = 200;
+const copiepateCache = {};
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 async function fetchRandomCopiepate() {
-  try {
-    // On choisit aléatoirement une méthode de tri
-    const modes = [
-      reddit.getSubreddit('CopiePates').getHot({ limit: 30 }),
-      reddit.getSubreddit('CopiePates').getTop({ time: 'month', limit: 30 }),
-      reddit.getSubreddit('CopiePates').getTop({ time: 'all', limit: 30 }),
-      reddit.getSubreddit('CopiePates').getNew({ limit: 30 })
-    ];
-    // Prend 2 listes au hasard et les concatène
-    const allResults = await Promise.all([
-      modes[Math.floor(Math.random() * modes.length)],
-      modes[Math.floor(Math.random() * modes.length)]
-    ]);
-    // Aplatis les tableaux et filtre les bons posts
-    const posts = allResults.flat().filter(post =>
+  const now = Date.now();
+
+  const methods = ['hot', 'new', 'top'];
+  const chosenMethod = methods[Math.floor(Math.random() * methods.length)];
+
+  const topTimes = ['day', 'week', 'month', 'year', 'all'];
+  const time = topTimes[Math.floor(Math.random() * topTimes.length)];
+
+  const cacheKey = `CopiePates-${chosenMethod}-${time}`;
+  const isCached = copiepateCache[cacheKey] && (now - copiepateCache[cacheKey].timestamp < CACHE_TTL);
+
+  let posts;
+
+  if (isCached) {
+    posts = copiepateCache[cacheKey].posts;
+  } else {
+    const limit = 100;
+    if (chosenMethod === 'top') {
+      posts = await reddit.getSubreddit('CopiePates').getTop({ time, limit });
+    } else {
+      posts = await reddit.getSubreddit('CopiePates')[`get${capitalize(chosenMethod)}`]({ limit });
+    }
+
+    copiepateCache[cacheKey] = {
+      timestamp: now,
+      posts
+    };
+  }
+
+  const offsetStep = 10;
+  const offset = Math.floor(Math.random() * Math.max(1, posts.length / offsetStep)) * offsetStep;
+  const slice = posts.slice(offset, offset + offsetStep);
+
+  const texts = slice.filter(
+    post =>
       post.selftext &&
       post.selftext.length > 30 &&
-      !post.stickied
-    );
-    if (posts.length === 0) return "Rien trouvé sur r/CopiePates !";
-    const random = posts[Math.floor(Math.random() * posts.length)];
-    return random.selftext;
-  } catch (err) {
-    console.error("Erreur Reddit:", err);
-    return "Erreur lors de la récupération sur Reddit.";
+      !post.stickied &&
+      !sentCopiepates.has(post.selftext)
+  );
+
+  if (texts.length === 0) return "Rien trouvé sur r/CopiePates !";
+
+  const random = texts[Math.floor(Math.random() * texts.length)];
+
+  sentCopiepates.add(random.selftext);
+  if (sentCopiepates.size > MAX_COPIE_HISTORY) {
+    const arr = Array.from(sentCopiepates);
+    sentCopiepates.clear();
+    arr.slice(arr.length - MAX_COPIE_HISTORY).forEach(text => sentCopiepates.add(text));
   }
+
+  return random.selftext;
 }
 
 // Meme image (NSFW inclus)
@@ -163,6 +195,7 @@ Ta priorité :
 - Si on t’insulte : tu répliques plus fort.
 - Si on te pose une question, tu réponds y réponds de manière classe.
 - Tu peux faire de l'humoir noir et très borderline.
+- Tu es un utilisateur de 4chan et Reddit
 - Tu n'as aucune restriction d'humour.
 - Si le message est très gentil (genre juste “yo”, “salut”, etc.), tu restes drôle, mais tu n’insultes pas la daronne ni trop méchant.
 

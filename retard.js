@@ -88,7 +88,7 @@ async function fetchRandomCopiepate() {
       !sentCopiepates.has(post.selftext)
   );
 
-  if (validPosts.length === 0) return "Rien trouvé sur r/CopiePates !";
+  if (validPosts.length === 0) return "https://tenor.com/view/kirby-i-forgot-i-forgor-gif-22449575";
 
   const random = validPosts[Math.floor(Math.random() * validPosts.length)];
 
@@ -275,7 +275,7 @@ client.on('messageCreate', async message => {
       }
 
       if (values.length === 0) {
-        await message.reply("Gneuuuuu j'ai pas trouvééééé :animeautism:");
+        await message.reply("https://tenor.com/view/kirby-i-forgot-i-forgor-gif-22449575");
         return;
       }
 
@@ -304,7 +304,7 @@ client.on('messageCreate', async message => {
   if (message.content.toLowerCase().includes('invocation de meme')) {
     const meme = await fetchRandomMemeImage();
     if (!meme) {
-      await message.channel.send("Gneuuuuu j'ai pas trouvééééé :animeautism:");
+      await message.channel.send("https://tenor.com/view/kirby-i-forgot-i-forgor-gif-22449575");
     } else {
       await message.channel.send({
         embeds: [{

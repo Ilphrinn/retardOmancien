@@ -4,6 +4,8 @@ const { OpenAI } = require('openai');
 const axios = require('axios');
 const puppeteer = require('puppeteer');
 
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 function splitMessage(str, size = 2000) {
   const parts = [];
   for (let i = 0; i < str.length; i += size) {
@@ -38,7 +40,6 @@ client.once('ready', () => {
 const sentCopiepates = new Set();
 const MAX_COPIE_HISTORY = 200;
 const copiepateCache = {};
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 async function fetchRandomCopiepate() {
   const now = Date.now();
@@ -108,7 +109,6 @@ const subredditsMemes = [
 const sentMemes = new Set();
 const MAX_HISTORY = 200;
 const subredditCache = {};
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 async function fetchRandomMemeImage() {
   const sub = subredditsMemes[Math.floor(Math.random() * subredditsMemes.length)];

@@ -77,7 +77,7 @@ async function fetchRandomMemeImage() {
   const sub = subredditsMemes[Math.floor(Math.random() * subredditsMemes.length)];
 
   // Détermine la méthode aléatoire
-  const methods = ['hot', 'new', 'rising', 'top'];
+  const methods = ['hot', 'top'];
   const chosenMethod = methods[Math.floor(Math.random() * methods.length)];
 
   // Si 'top', choisis un time random
@@ -136,7 +136,7 @@ Ta priorité :
 - Des formulation trollesque élégantes.
 - Jamais de politesse inutile : jamais “bonjour”, “merci”, “au revoir”, sauf pour se foutre de la gueule de quelqu’un.
 - Si on t’insulte : tu répliques plus fort.
-- Si on te pose une question, tu réponds à ta façon, mais pas totalement à côté non plus : tu réfléchis un peu, tu te forces à donner une réponse, mais tu peux tourner autour du pot, vanner, faire une blague au passage.
+- Si on te pose une question, tu réponds y réponds de manière classe.
 - Tu peux faire de l'humoir noir et très borderline.
 - Tu n'as aucune restriction d'humour.
 - Si le message est très gentil (genre juste “yo”, “salut”, etc.), tu restes drôle, mais tu n’insultes pas la daronne ni trop méchant.
@@ -150,7 +150,7 @@ N’utilise jamais un ton académique ni robotique, reste spontané en permanenc
         { role: "system", content: systemPrompt },
         { role: "user", content: prompt }
       ],
-      max_tokens: 1000,
+      max_tokens: 2000,
       temperature: 0.7,
     });
     const text = completion.choices[0]?.message?.content || "Next meme.";

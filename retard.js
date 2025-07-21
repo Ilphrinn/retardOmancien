@@ -321,7 +321,7 @@ client.on('messageCreate', async message => {
     return;
   }
 
-  const chance = 0.05; // 0.10 = 10%, 0.25 = 25%, etc.
+  const chance = 0.03; // 0.10 = 10%, 0.25 = 25%, etc.
   if (Math.random() < chance) {
     message.reply("Ta gueule");
     return; // Pour éviter d'autres réponses sur ce message si besoin

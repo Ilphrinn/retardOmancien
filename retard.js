@@ -44,13 +44,10 @@ const copiepateCache = {};
 async function fetchRandomCopiepate() {
   const now = Date.now();
 
-  const methods = ['hot', 'new', 'top'];
-  const chosenMethod = methods[Math.floor(Math.random() * methods.length)];
-
   const topTimes = ['day', 'week', 'month', 'year', 'all'];
   const time = topTimes[Math.floor(Math.random() * topTimes.length)];
 
-  const cacheKey = `CopiePates-${chosenMethod}-${time}`;
+  const cacheKey = `CopiePates-top-${time}`;
   const isCached = copiepateCache[cacheKey] && (now - copiepateCache[cacheKey].timestamp < CACHE_TTL);
 
   let posts;
@@ -58,12 +55,8 @@ async function fetchRandomCopiepate() {
   if (isCached) {
     posts = copiepateCache[cacheKey].posts;
   } else {
-    const limit = 100;
-    if (chosenMethod === 'top') {
-      posts = await reddit.getSubreddit('CopiePates').getTop({ time, limit });
-    } else {
-      posts = await reddit.getSubreddit('CopiePates')[`get${capitalize(chosenMethod)}`]({ limit });
-    }
+    const limit = 150;
+    posts = await reddit.getSubreddit('CopiePates').getTop({ time, limit });
 
     copiepateCache[cacheKey] = {
       timestamp: now,
@@ -71,11 +64,7 @@ async function fetchRandomCopiepate() {
     };
   }
 
-  const offsetStep = 10;
-  const offset = Math.floor(Math.random() * Math.max(1, posts.length / offsetStep)) * offsetStep;
-  const slice = posts.slice(offset, offset + offsetStep);
-
-  const texts = slice.filter(
+  const validPosts = posts.filter(
     post =>
       post.selftext &&
       post.selftext.length > 30 &&
@@ -83,9 +72,9 @@ async function fetchRandomCopiepate() {
       !sentCopiepates.has(post.selftext)
   );
 
-  if (texts.length === 0) return "Gneuuuuu j'ai pas trouvééééé :animeautism:";
+  if (validPosts.length === 0) return "Gneuuuuu j'ai pas trouvééééé :animeautism:";
 
-  const random = texts[Math.floor(Math.random() * texts.length)];
+  const random = validPosts[Math.floor(Math.random() * validPosts.length)];
 
   sentCopiepates.add(random.selftext);
   if (sentCopiepates.size > MAX_COPIE_HISTORY) {
@@ -96,6 +85,7 @@ async function fetchRandomCopiepate() {
 
   return random.selftext;
 }
+
 
 // Meme image (NSFW inclus)
 const subredditsMemes = [

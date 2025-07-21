@@ -73,42 +73,67 @@ const subredditsMemes = [
   'MemeMan',
 ];
 
+const sentMemes = new Set();
+const MAX_HISTORY = 200;
+const subredditCache = {};
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 async function fetchRandomMemeImage() {
   const sub = subredditsMemes[Math.floor(Math.random() * subredditsMemes.length)];
+  const now = Date.now();
 
-  // Détermine la méthode aléatoire
-  const methods = ['hot', 'top'];
+  // Méthodes préférées selon diversité et rapidité
+  const methods = ['hot', 'new', 'rising', 'top'];
   const chosenMethod = methods[Math.floor(Math.random() * methods.length)];
 
-  // Si 'top', choisis un time random
   const topTimes = ['day', 'week', 'month', 'year', 'all'];
   const time = topTimes[Math.floor(Math.random() * topTimes.length)];
 
-  // Récupère jusqu'à 300 posts (pour simuler un "offset")
-  const limit = 300;
   let posts;
-  if (chosenMethod === 'top') {
-    posts = await reddit.getSubreddit(sub).getTop({ time, limit });
+
+  const cacheKey = `${sub}-${chosenMethod}-${time}`;
+  const isCached = subredditCache[cacheKey] && (now - subredditCache[cacheKey].timestamp < CACHE_TTL);
+
+  if (isCached) {
+    posts = subredditCache[cacheKey].posts;
   } else {
-    posts = await reddit.getSubreddit(sub)[`get${capitalize(chosenMethod)}`]({ limit });
+    const limit = chosenMethod === 'top' ? 100 : 50;
+    if (chosenMethod === 'top') {
+      posts = await reddit.getSubreddit(sub).getTop({ time, limit });
+    } else {
+      posts = await reddit.getSubreddit(sub)[`get${capitalize(chosenMethod)}`]({ limit });
+    }
+
+    subredditCache[cacheKey] = {
+      timestamp: now,
+      posts
+    };
   }
 
-  // Décale aléatoirement dans les résultats
-  const offsetStep = 50;
-  const maxOffset = Math.floor((posts.length - offsetStep) / offsetStep);
-  const offset = Math.floor(Math.random() * (maxOffset + 1)) * offsetStep;
+  // Sélection aléatoire dans la liste
+  const offsetStep = 10;
+  const offset = Math.floor(Math.random() * Math.max(1, posts.length / offsetStep)) * offsetStep;
   const slice = posts.slice(offset, offset + offsetStep);
 
-  // Filtre uniquement les images
   const images = slice.filter(
     post =>
       post.url &&
-      /\.(jpg|jpeg|png|gif)$/.test(post.url)
+      /\.(jpg|jpeg|png|gif)$/.test(post.url) &&
+      !sentMemes.has(post.url)
   );
 
   if (images.length === 0) return null;
 
   const random = images[Math.floor(Math.random() * images.length)];
+
+  // Historique
+  sentMemes.add(random.url);
+  if (sentMemes.size > MAX_HISTORY) {
+    const arr = Array.from(sentMemes);
+    sentMemes.clear();
+    arr.slice(arr.length - MAX_HISTORY).forEach(url => sentMemes.add(url));
+  }
+
   return {
     url: random.url,
     title: random.title,

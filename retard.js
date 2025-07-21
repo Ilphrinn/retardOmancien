@@ -45,9 +45,7 @@ async function fetchRandomCopiepate() {
   const now = Date.now();
 
   const topTimes = ['day', 'week', 'month', 'year', 'all'];
-  const time = topTimes[Math.floor(Math.random() * topTimes.length)];
-
-  const cacheKey = `CopiePates-top-${time}`;
+  const cacheKey = 'CopiePates-multiTop';
   const isCached = copiepateCache[cacheKey] && (now - copiepateCache[cacheKey].timestamp < CACHE_TTL);
 
   let posts;
@@ -55,8 +53,25 @@ async function fetchRandomCopiepate() {
   if (isCached) {
     posts = copiepateCache[cacheKey].posts;
   } else {
-    const limit = 150;
-    posts = await reddit.getSubreddit('CopiePates').getTop({ time, limit });
+    const limit = 100;
+    const all = await Promise.all(
+      topTimes.map(time =>
+        reddit.getSubreddit('CopiePates').getTop({ time, limit }).catch(() => [])
+      )
+    );
+
+    // Aplatir + dédupliquer par ID
+    const flat = all.flat();
+    const unique = [];
+    const seenIds = new Set();
+    for (const post of flat) {
+      if (!seenIds.has(post.id)) {
+        seenIds.add(post.id);
+        unique.push(post);
+      }
+    }
+
+    posts = unique;
 
     copiepateCache[cacheKey] = {
       timestamp: now,
@@ -64,6 +79,7 @@ async function fetchRandomCopiepate() {
     };
   }
 
+  // Filtrer les posts valides
   const validPosts = posts.filter(
     post =>
       post.selftext &&
@@ -72,10 +88,11 @@ async function fetchRandomCopiepate() {
       !sentCopiepates.has(post.selftext)
   );
 
-  if (validPosts.length === 0) return "Gneuuuuu j'ai pas trouvééééé :animeautism:";
+  if (validPosts.length === 0) return "Rien trouvé sur r/CopiePates !";
 
   const random = validPosts[Math.floor(Math.random() * validPosts.length)];
 
+  // Historique
   sentCopiepates.add(random.selftext);
   if (sentCopiepates.size > MAX_COPIE_HISTORY) {
     const arr = Array.from(sentCopiepates);
@@ -85,7 +102,6 @@ async function fetchRandomCopiepate() {
 
   return random.selftext;
 }
-
 
 // Meme image (NSFW inclus)
 const subredditsMemes = [

@@ -75,25 +75,39 @@ const subredditsMemes = [
 
 async function fetchRandomMemeImage() {
   const sub = subredditsMemes[Math.floor(Math.random() * subredditsMemes.length)];
-  const methods = [
-    reddit.getSubreddit(sub).getHot({ limit: 30 }),
-    reddit.getSubreddit(sub).getTop({ time: 'month', limit: 30 }),
-    reddit.getSubreddit(sub).getTop({ time: 'all', limit: 30 }),
-    reddit.getSubreddit(sub).getNew({ limit: 30 }),
-    reddit.getSubreddit(sub).getRising({ limit: 30 })
-  ];
-  // Tire 2 méthodes au hasard et concatène leurs résultats
-  const allResults = await Promise.all([
-    methods[Math.floor(Math.random() * methods.length)],
-    methods[Math.floor(Math.random() * methods.length)]
-  ]);
-  // Mélange tout et filtre les images valides
-  const images = allResults.flat().filter(
+
+  // Détermine la méthode aléatoire
+  const methods = ['hot', 'new', 'rising', 'top'];
+  const chosenMethod = methods[Math.floor(Math.random() * methods.length)];
+
+  // Si 'top', choisis un time random
+  const topTimes = ['day', 'week', 'month', 'year', 'all'];
+  const time = topTimes[Math.floor(Math.random() * topTimes.length)];
+
+  // Récupère jusqu'à 300 posts (pour simuler un "offset")
+  const limit = 300;
+  let posts;
+  if (chosenMethod === 'top') {
+    posts = await reddit.getSubreddit(sub).getTop({ time, limit });
+  } else {
+    posts = await reddit.getSubreddit(sub)[`get${capitalize(chosenMethod)}`]({ limit });
+  }
+
+  // Décale aléatoirement dans les résultats
+  const offsetStep = 50;
+  const maxOffset = Math.floor((posts.length - offsetStep) / offsetStep);
+  const offset = Math.floor(Math.random() * (maxOffset + 1)) * offsetStep;
+  const slice = posts.slice(offset, offset + offsetStep);
+
+  // Filtre uniquement les images
+  const images = slice.filter(
     post =>
       post.url &&
-      (post.url.endsWith('.jpg') || post.url.endsWith('.png') || post.url.endsWith('.jpeg') || post.url.endsWith('.gif'))
+      /\.(jpg|jpeg|png|gif)$/.test(post.url)
   );
+
   if (images.length === 0) return null;
+
   const random = images[Math.floor(Math.random() * images.length)];
   return {
     url: random.url,
@@ -101,6 +115,12 @@ async function fetchRandomMemeImage() {
     subreddit: sub
   };
 }
+
+// Helper pour capitaliser (nécessaire pour appeler `getHot`, `getNew`, etc.)
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,

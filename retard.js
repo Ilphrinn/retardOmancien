@@ -78,7 +78,7 @@ async function fetchRandomCopiepate() {
     };
   }
 
-  const MAX_CHARS = 1000;
+  const MAX_CHARS = 2000;
   const MAX_LINES = 30;
 
   const validPosts = posts.filter(post => {

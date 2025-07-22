@@ -60,7 +60,6 @@ async function fetchRandomCopiepate() {
       )
     );
 
-    // Aplatir + dédupliquer par ID
     const flat = all.flat();
     const unique = [];
     const seenIds = new Set();
@@ -79,20 +78,25 @@ async function fetchRandomCopiepate() {
     };
   }
 
-  // Filtrer les posts valides
-  const validPosts = posts.filter(
-    post =>
-      post.selftext &&
-      post.selftext.length > 30 &&
+  const MAX_CHARS = 1000;
+  const MAX_LINES = 30;
+
+  const validPosts = posts.filter(post => {
+    const text = post.selftext;
+    return (
+      text &&
+      text.length > 30 &&
+      text.length <= MAX_CHARS &&
+      text.split('\n').length <= MAX_LINES &&
       !post.stickied &&
-      !sentCopiepates.has(post.selftext)
-  );
+      !sentCopiepates.has(text)
+    );
+  });
 
   if (validPosts.length === 0) return "https://tenor.com/view/kirby-i-forgot-i-forgor-gif-22449575";
 
   const random = validPosts[Math.floor(Math.random() * validPosts.length)];
 
-  // Historique
   sentCopiepates.add(random.selftext);
   if (sentCopiepates.size > MAX_COPIE_HISTORY) {
     const arr = Array.from(sentCopiepates);

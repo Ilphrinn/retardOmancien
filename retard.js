@@ -227,7 +227,7 @@ N’utilise jamais un ton académique ni robotique, reste spontané en permanenc
 
 client.on('messageCreate', async message => {
   if (message.author.bot) return;
-  
+/*  
   // Copiepate classique
   if (message.content.toLowerCase().includes('copiepate')) {
     const copypasta = await fetchRandomCopiepate();
@@ -316,7 +316,7 @@ client.on('messageCreate', async message => {
     }
     return;
   }
-
+*/
   if (message.mentions.has(client.user)) {
     const prompt = message.content.replace(`<@${client.user.id}>`, '').trim();
     if (prompt.length === 0) return;

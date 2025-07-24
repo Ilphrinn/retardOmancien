@@ -14,25 +14,7 @@ function splitMessage(str, size = 2000) {
   return parts;
 }
 
-const { REST, Routes, SlashCommandBuilder } = require('discord.js');
 const { DISCORD_TOKEN, CLIENT_ID } = process.env;
-
-const commands = [
-  new SlashCommandBuilder().setName('curse').setDescription('Active Curse of Ra'),
-  new SlashCommandBuilder().setName('copiepate').setDescription('Reçoit une copiepasta'),
-  new SlashCommandBuilder().setName('meme').setDescription('Reçoit un meme')
-].map(cmd => cmd.toJSON());
-
-const rest = new REST({ version: '10' }).setToken(DISCORD_TOKEN);
-
-(async () => {
-  try {
-    await rest.put(Routes.applicationCommands(CLIENT_ID), { body: commands });
-    console.log('Commandes slash enregistrées.');
-  } catch (err) {
-    console.error(err);
-  }
-})();
 
 const reddit = new Snoowrap({
   userAgent: 'retardOmancienBot/1.0 by a retard',

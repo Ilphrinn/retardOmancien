@@ -373,6 +373,64 @@ client.on('interactionCreate', async interaction => {
       });
     }
   }
+
+  else if (name === 'ascii') {
+    try {
+      await interaction.deferReply({ ephemeral: true });
+
+      const maxTries = 5;
+      const maxPages = 53;
+      let attempt = 0;
+      let values = [];
+
+      while (values.length === 0 && attempt < maxTries) {
+        attempt++;
+        const randomPage = Math.floor(Math.random() * maxPages) + 1;
+        const url = `https://www.twitchquotes.com/copypastas/ascii-art?page=${randomPage}`;
+
+        const browser = await puppeteer.launch({
+          headless: "new",
+          args: ['--no-sandbox', '--disable-setuid-sandbox']
+        });
+
+        const page = await browser.newPage();
+        await page.setUserAgent("Mozilla/5.0");
+        await page.goto(url, { waitUntil: "domcontentloaded" });
+
+        try {
+          await page.waitForSelector('button.copy_to_clipboard_js', { timeout: 5000 });
+
+          values = await page.$$eval('button.copy_to_clipboard_js', buttons =>
+            buttons
+              .map(btn => btn.getAttribute("data-clipboard-text")?.trim())
+              .filter(text => text && text.length > 30)
+          );
+        } catch (err) {
+          console.warn(`Essai ${attempt} : aucun bouton détecté.`);
+        }
+
+        await browser.close();
+      }
+
+      await interaction.deleteReply();
+
+      if (values.length === 0) {
+        await interaction.channel.send("https://tenor.com/view/kirby-i-forgot-i-forgor-gif-22449575");
+      } else {
+        const random = values[Math.floor(Math.random() * values.length)];
+        const parts = splitMessage(random, 2000);
+        for (const part of parts) {
+          await interaction.channel.send(part);
+        }
+      }
+    } catch (err) {
+      console.error("Erreur Puppeteer ASCII :", err.message);
+      try {
+        await interaction.deleteReply();
+      } catch {}
+      await interaction.channel.send("Erreur lors du chargement de l'ASCII.");
+    }
+  }
 });
 
 client.once('ready', () => {

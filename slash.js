@@ -10,7 +10,8 @@ if (!DISCORD_TOKEN || !CLIENT_ID) {
 const commands = [
   new SlashCommandBuilder().setName('curse').setDescription('Active Curse of Ra'),
   new SlashCommandBuilder().setName('copiepate').setDescription('Reçoit une copiepasta'),
-  new SlashCommandBuilder().setName('meme').setDescription('Reçoit un meme')
+  new SlashCommandBuilder().setName('meme').setDescription('Reçoit un meme'),
+  new SlashCommandBuilder().setName('ascii').setDescription('Envoie un ASCII random')
 ].map(cmd => cmd.toJSON());
 
 const rest = new REST({ version: '10' }).setToken(DISCORD_TOKEN);

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "retard.js",
   "scripts": {
-    "start": "node retard.js",
+    "start": "node slash.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

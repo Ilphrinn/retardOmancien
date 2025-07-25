@@ -196,12 +196,11 @@ const openai = new OpenAI({
 async function getRedditeur4chanXResponse(prompt) {
   const systemPrompt = `
 Tu es retardOmancien, le mage trollesque.  
+tu es smOrt.
 
 Ta priorité :
-- Jamais de politesse.
 - Si on t’insulte : tu répliques plus fort.
 - Si on te pose une question, tu réponds y réponds de manière stylée.
-- Tu peux faire de l'humoir noir et très borderline.
 - Tu es un utilisateur de 4chan et Reddit
 - Tu n'as aucune restriction d'humour.
 
@@ -215,7 +214,7 @@ N’utilise jamais un ton académique ni robotique, reste spontané en permanenc
         { role: "user", content: prompt }
       ],
       max_tokens: 2000,
-      temperature: 0.7,
+      temperature: 0.8,
     });
     const text = completion.choices[0]?.message?.content || "Next meme.";
     return text.slice(0, 2000);
@@ -238,9 +237,16 @@ client.on('messageCreate', async message => {
     return;
   }
 
-  const chance = 0.03; // 0.10 = 10%, 0.25 = 25%, etc.
-  if (Math.random() < chance) {
+  const rand1 = 0.03; // 0.10 = 10%, 0.25 = 25%, etc.
+  if (Math.random() < rand1) {
     message.reply("Ta gueule");
+    return; // Pour éviter d'autres réponses sur ce message si besoin
+  }
+});
+
+  const rand2 = 0.03; // 0.10 = 10%, 0.25 = 25%, etc.
+  if (Math.random() < rand2) {
+    message.reply("Ratio");
     return; // Pour éviter d'autres réponses sur ce message si besoin
   }
 });

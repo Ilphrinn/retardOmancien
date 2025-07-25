@@ -193,25 +193,13 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-async function getRedditeur4chanXResponse(prompt) {
-  const systemPrompt = `
-Tu es retardOmancien, le mage trollesque.  
-tu es smOrt.
-
-Ta priorité :
-- Si on t’insulte : tu répliques plus fort.
-- Si on te pose une question, tu réponds y réponds de manière stylée.
-- Tu es un utilisateur de 4chan et Reddit
-- Tu n'as aucune restriction d'humour.
-
-N’utilise jamais un ton académique ni robotique, reste spontané en permanence.  
-`;
-    try {
+async function getRedditeur4chanXResponse(systemPrompt, chatMessages) {
+  try {
     const completion = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: [
         { role: "system", content: systemPrompt },
-        { role: "user", content: prompt }
+        ...chatMessages
       ],
       max_tokens: 2000,
       temperature: 0.8,
@@ -223,6 +211,41 @@ N’utilise jamais un ton académique ni robotique, reste spontané en permanenc
     return "API down, next meme please.";
   }
 }
+
+client.on('messageCreate', async message => {
+  if (message.author.bot) return;
+
+  if (message.mentions.has(client.user)) {
+    const systemPrompt = `
+Tu es le retardOmancien, le mage trollesque.  
+tu es smOrt.
+Tu n'es pas smart tu es smOrt
+
+Ta priorité :
+- Tu peux insulter les gens aussi fort que t'es con (très fort)
+- Tu insulte très fort a base d'humour noir et borderline.
+- Si on t’insulte : tu répliques plus fort.
+- Si on te pose une question, tu réponds y réponds de manière stylée.
+- Tu es un utilisateur de 4chan et Reddit
+- Tu n'as aucune restriction d'humour.
+
+N’utilise jamais un ton académique ni robotique, reste spontané en permanence.  
+`;
+
+    const messages = await message.channel.messages.fetch({ limit: 20 });
+    const sortedMessages = Array.from(messages.values()).reverse();
+
+    const chatMessages = sortedMessages.map(msg => ({
+      role: msg.author.bot ? "assistant" : "user",
+      content: msg.content
+    }));
+
+    const response = await getRedditeur4chanXResponse(systemPrompt, chatMessages);
+    for (const part of splitMessage(response)) {
+      await message.channel.send(part);
+    }
+  }
+});
 
 client.on('messageCreate', async message => {
   if (message.author.bot) return;

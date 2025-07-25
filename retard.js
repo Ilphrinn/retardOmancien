@@ -242,7 +242,6 @@ client.on('messageCreate', async message => {
     message.reply("Ta gueule");
     return; // Pour éviter d'autres réponses sur ce message si besoin
   }
-});
 
   const rand2 = 0.03; // 0.10 = 10%, 0.25 = 25%, etc.
   if (Math.random() < rand2) {

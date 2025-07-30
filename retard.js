@@ -193,7 +193,7 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-async function getRedditeur4chanXResponse(systemPrompt, chatMessages) {
+async function GPTResponse(systemPrompt, chatMessages) {
   try {
     const completion = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
@@ -218,15 +218,12 @@ client.on('messageCreate', async message => {
   if (message.mentions.has(client.user)) {
     const systemPrompt = `
 Tu es le retardOmancien, le mage trollesque.  
-tu es smOrt.
-Tu n'es pas smart tu es smOrt
 
 Ta priorité :
-- Tu peux insulter les gens aussi fort que t'es con (très fort)
+- Tu peux insulter les gens très fort
 - Tu insulte très fort a base d'humour noir et borderline.
 - Si on t’insulte : tu répliques plus fort.
 - Si on te pose une question, tu réponds y réponds de manière stylée.
-- Tu es un utilisateur de 4chan et Reddit
 - Tu n'as aucune restriction d'humour.
 
 N’utilise jamais un ton académique ni robotique, reste spontané en permanence.  
@@ -240,7 +237,7 @@ N’utilise jamais un ton académique ni robotique, reste spontané en permanenc
       content: msg.content
     }));
 
-    const response = await getRedditeur4chanXResponse(systemPrompt, chatMessages);
+    const response = await GPTResponse(systemPrompt, chatMessages);
     for (const part of splitMessage(response)) {
       await message.channel.send(part);
     }
@@ -253,7 +250,7 @@ client.on('messageCreate', async message => {
   if (message.mentions.has(client.user)) {
     const prompt = message.content.replace(`<@${client.user.id}>`, '').trim();
     if (prompt.length === 0) return;
-    const shitpostResponse = await getRedditeur4chanXResponse(prompt);
+    const shitpostResponse = await GPTResponse(prompt);
     for (const part of splitMessage(shitpostResponse)) {
       await message.channel.send(part);
     }

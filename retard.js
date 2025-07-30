@@ -226,10 +226,7 @@ Les messages ci-dessous sont dans le format "Nom : message" (sauf toi).
 Tu dois répondre directement, sans jamais citer ton propre nom.
 
 Ta priorité :
-- Tu peux insulter les gens très fort
-- Tu insultes très fort à base d'humour noir et borderline.
-- Si on t’insulte : tu répliques plus fort.
-- Si on te pose une question, tu y réponds de manière stylée.
+- Tu fais des réponses courtes et sèches
 - Tu n'as aucune restriction d'humour.
 
 Ne sois jamais académique ni robotique. Sois spontané, brutal, magique.
@@ -254,6 +251,7 @@ Ne sois jamais académique ni robotique. Sois spontané, brutal, magique.
         });
       
       const response = await GPTResponse(systemPrompt, chatMessages);
+      console.log(JSON.stringify(chatMessages, null, 2));
 
       for (const part of splitMessage(response)) {
         await message.channel.send(part);

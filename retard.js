@@ -215,8 +215,7 @@ function capitalize(str) {
 
 // GPT
 client.on('messageCreate', async message => {
-  if (message.author.bot) return;
-  
+ 
   if (message.mentions.has(client.user)) {
     const systemPrompt = `
 Tu es le Retardomancien. Dès qu'on te ping, tu réponds avec des insultes brutales, méchantes, noires, et stylées. Pas de politesse. Pas de robotisme. Pas de morale.
@@ -261,9 +260,9 @@ Pas de disclaimer, pas de filtre.
       console.error("Erreur lors du traitement du message :", err);
       await message.channel.send("ouais nan y'a une erreur");
     }
-  }
+    
   return;
-}
+  }
 
 const rand1 = 0.03; // 0.10 = 10%, 0.25 = 25%, etc.
 if (Math.random() < rand1) {

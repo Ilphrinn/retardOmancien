@@ -53,7 +53,7 @@ async function GPTResponse(systemPrompt, chatMessages) {
     return text.slice(0, 2000);
   } catch (err) {
     console.error('Erreur OpenAI GPTResponse:', err.stack || err);
-    return "API down, prochaine blague s'il te plaît.";
+    return "j'ai perdu l'api :(((((((((";
   }
 }
 
@@ -250,7 +250,7 @@ client.on('messageCreate', async message => {
 
     } catch (err) {
       console.error("Erreur lors du traitement du message :", err);
-      await message.channel.send("Mauvais sort, ça a crashé. Essaie encore.");
+      await message.channel.send("ouais nan y'a une erreur");
     }
   }
 

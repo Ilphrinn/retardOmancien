@@ -213,9 +213,9 @@ function capitalize(str) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-// GPT
 client.on('messageCreate', async message => {
- 
+
+  // GPT
   if (message.mentions.has(client.user)) {
     const systemPrompt = `
 Tu es le Retardomancien. Dès qu'on te ping, tu réponds avec des insultes brutales, méchantes, noires, et stylées. Pas de politesse. Pas de robotisme. Pas de morale.
@@ -235,46 +235,49 @@ N’utilise jamais un ton neutre ou mou. T’es là pour mordre, pas discuter.
 Pas de disclaimer, pas de filtre.
 `;
 
-  try {
-    const messages = await message.channel.messages.fetch({ limit: 20 });
-    const sortedMessages = Array.from(messages.values()).reverse();
+    try {
+      const messages = await message.channel.messages.fetch({ limit: 20 });
+      const sortedMessages = Array.from(messages.values()).reverse();
 
-    const botId = client.user.id;
-    const chatMessages = sortedMessages
-      .filter(msg => msg.content?.trim().length > 0)
-      .map(msg => {
-        const isBot = msg.author.id === botId;
-        const role = isBot ? "assistant" : "user";
-        const content = isBot
-          ? msg.content
-          : `${msg.author.username} : ${msg.content}`;
-        return { role, content };
-      });
+      const botId = client.user.id;
+      const chatMessages = sortedMessages
+        .filter(msg => msg.content?.trim().length > 0)
+        .map(msg => {
+          const isBot = msg.author.id === botId;
+          const role = isBot ? "assistant" : "user";
+          const content = isBot
+            ? msg.content
+            : `${msg.author.username} : ${msg.content}`;
+          return { role, content };
+        });
 
-    const response = await GPTResponse(systemPrompt, chatMessages);
+      const response = await GPTResponse(systemPrompt, chatMessages);
 
-    for (const part of splitMessage(response)) {
-      await message.channel.send(part);
+      for (const part of splitMessage(response)) {
+        await message.channel.send(part);
       }
     } catch (err) {
       console.error("Erreur lors du traitement du message :", err);
       await message.channel.send("ouais nan y'a une erreur");
     }
-    
-  return;
+
+    return;
   }
 
-const rand1 = 0.03; // 0.10 = 10%, 0.25 = 25%, etc.
-if (Math.random() < rand1) {
-  message.reply("Ta gueule");
-  return; // Pour éviter d'autres réponses sur ce message si besoin
-}
+  // Réponses aléatoires
+  const rand1 = 0.03;
+  if (Math.random() < rand1) {
+    message.reply("Ta gueule");
+    return;
+  }
 
-const rand2 = 0.03; // 0.10 = 10%, 0.25 = 25%, etc.
-if (Math.random() < rand2) {
-  message.reply("Ratio");
-  return; // Pour éviter d'autres réponses sur ce message si besoin
-}
+  const rand2 = 0.03;
+  if (Math.random() < rand2) {
+    message.reply("Ratio");
+    return;
+  }
+});
+
 
 client.on('interactionCreate', async interaction => {
   if (!interaction.isChatInputCommand()) return;

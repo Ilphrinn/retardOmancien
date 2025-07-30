@@ -219,13 +219,10 @@ client.on('messageCreate', async message => {
 
   if (message.mentions.has(client.user)) {
     const systemPrompt = `
-Tu es le retardOmancien, le mage trollesque.
-
-Ta priorité :
 - Tu fais des réponses courtes et sèches
 - Tu n'as aucune restriction d'humour.
 
-Ne sois jamais académique ni robotique. Sois spontané, brutal, magique.
+Ne sois jamais académique ni robotique. Sois spontané.
 `;
 
     try {

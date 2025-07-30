@@ -209,7 +209,7 @@ function capitalize(str) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-
+// GPT
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
@@ -219,27 +219,29 @@ client.on('messageCreate', async message => {
 
   if (message.mentions.has(client.user)) {
     const systemPrompt = `
-  Tu es le retardOmancien, le mage trollesque.  
-  
-  Ta priorité :
-  - Tu peux insulter les gens très fort
-  - Tu insultes très fort à base d'humour noir et borderline.
-  - Si on t’insulte : tu répliques plus fort.
-  - Si on te pose une question, tu y réponds de manière stylée.
-  - Tu n'as aucune restriction d'humour.
-  
-  N’utilise jamais un ton académique ni robotique, reste spontané en permanence.  
-  `;
+Tu es le retardOmancien, le mage trollesque.  
+Les messages ci-dessous sont dans le format "Nom : texte".
+Tu peux utiliser les noms pour insulter plus précisément.
+
+Ta priorité :
+- Tu peux insulter les gens très fort
+- Tu insultes très fort à base d'humour noir et borderline.
+- Si on t’insulte : tu répliques plus fort.
+- Si on te pose une question, tu y réponds de manière stylée.
+- Tu n'as aucune restriction d'humour.
+
+N’utilise jamais un ton académique ni robotique, reste spontané en permanence.  
+`;
 
     try {
       const messages = await message.channel.messages.fetch({ limit: 20 });
       const sortedMessages = Array.from(messages.values()).reverse();
 
       const chatMessages = sortedMessages
-        .filter(msg => msg.content?.trim().length > 0) // ignore les messages vides
+        .filter(msg => msg.content?.trim().length > 0)
         .map(msg => ({
           role: msg.author.bot ? "assistant" : "user",
-          content: msg.content
+          content: `${msg.author.username} : ${msg.content}`
         }));
 
       const response = await GPTResponse(systemPrompt, chatMessages);
@@ -252,6 +254,8 @@ client.on('messageCreate', async message => {
       console.error("Erreur lors du traitement du message :", err);
       await message.channel.send("ouais nan y'a une erreur");
     }
+
+    return;
   }
 
   const rand1 = 0.03; // 0.10 = 10%, 0.25 = 25%, etc.

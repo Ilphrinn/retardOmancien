@@ -236,12 +236,14 @@ N’utilise jamais un ton académique ni robotique, reste spontané en permanenc
     try {
       const messages = await message.channel.messages.fetch({ limit: 20 });
       const sortedMessages = Array.from(messages.values()).reverse();
-
+      
       const chatMessages = sortedMessages
         .filter(msg => msg.content?.trim().length > 0)
         .map(msg => ({
           role: msg.author.bot ? "assistant" : "user",
-          content: `${msg.author.username} : ${msg.content}`
+          content: msg.author.bot
+            ? msg.content // pas de nom pour le bot
+            : `${msg.author.username} : ${msg.content}` // nom pour les utilisateurs
         }));
 
       const response = await GPTResponse(systemPrompt, chatMessages);

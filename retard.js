@@ -246,7 +246,6 @@ Ne sois jamais académique ni robotique. Sois spontané.
         });
       
       const response = await GPTResponse(systemPrompt, chatMessages);
-      console.log(JSON.stringify(chatMessages, null, 2));
 
       for (const part of splitMessage(response)) {
         await message.channel.send(part);

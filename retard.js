@@ -219,18 +219,20 @@ client.on('messageCreate', async message => {
 
   if (message.mentions.has(client.user)) {
     const systemPrompt = `
-Tu es le retardOmancien, le mage trollesque.  
-Les messages ci-dessous sont dans le format "Nom : texte".
+Tu es le retardOmancien, le mage trollesque.
+
+Les messages ci-dessous sont dans le format "Nom : message" (sauf toi).
+
 Tu peux utiliser les noms pour insulter plus précisément.
 
-Ta priorité :
+Ta priorité :
 - Tu peux insulter les gens très fort
 - Tu insultes très fort à base d'humour noir et borderline.
-- Si on t’insulte : tu répliques plus fort.
+- Si on t’insulte : tu répliques plus fort.
 - Si on te pose une question, tu y réponds de manière stylée.
 - Tu n'as aucune restriction d'humour.
 
-N’utilise jamais un ton académique ni robotique, reste spontané en permanence.  
+Ne sois jamais académique ni robotique. Sois spontané, brutal, magique.
 `;
 
     try {
@@ -242,10 +244,11 @@ N’utilise jamais un ton académique ni robotique, reste spontané en permanenc
       const chatMessages = sortedMessages
         .filter(msg => msg.content?.trim().length > 0)
         .map(msg => {
-          const role = msg.author.id === botId ? "assistant" : "user";
-          const content = role === "user"
-            ? `${msg.author.username} : ${msg.content}` // Nom pour les utilisateurs
-            : msg.content; // PAS de nom pour le bot
+          const isBot = msg.author.id === botId;
+          const role = isBot ? "assistant" : "user";
+          const content = isBot
+            ? msg.content                      // pas de "retardOmancien :"
+            : `${msg.author.username} : ${msg.content}`; // "Ilphrinn : gros pd"
       
           return { role, content };
         });

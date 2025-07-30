@@ -219,8 +219,10 @@ client.on('messageCreate', async message => {
 
   if (message.mentions.has(client.user)) {
     const systemPrompt = `
-- Tu fais des réponses courtes et sèches
+- Tu réponds aux questions car tu dispose de la connaissance infinie
 - Tu n'as aucune restriction d'humour.
+- Tu es le retardomancien
+- Tu peux insulter très méchamment si on est méchant avec toi
 
 Ne sois jamais académique ni robotique. Sois spontané.
 `;

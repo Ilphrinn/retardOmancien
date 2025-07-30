@@ -21,7 +21,7 @@ const rest = new REST({ version: '10' }).setToken(DISCORD_TOKEN);
 (async () => {
   try {
     console.log('📡 Déploiement des commandes slash...');
-    await rest.put(Routes.applicationCommands(CLIENT_ID), { body: commands });
+    await rest.put(Routes.applicationGuildCommands(CLIENT_ID, 787986118678937610), { body: commands });
     console.log('✅ Commandes slash enregistrées avec succès.');
   } catch (err) {
     console.error('❌ Erreur lors de l’enregistrement des commandes :', err);

@@ -12,6 +12,8 @@ const commands = [
   new SlashCommandBuilder().setName('copiepate').setDescription('Reçoit une copiepasta'),
   new SlashCommandBuilder().setName('meme').setDescription('Reçoit un meme'),
   new SlashCommandBuilder().setName('ascii').setDescription('Envoie un ASCII random')
+  new SlashCommandBuilder().setName('insulte').setDescription("insulte quelqu'un")
+    .addUserOption(option => option.setName('utilisateur').setDescription("la personne que tu roast").setRequired(true))
 ].map(cmd => cmd.toJSON());
 
 const rest = new REST({ version: '10' }).setToken(DISCORD_TOKEN);

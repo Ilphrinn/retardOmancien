@@ -36,25 +36,29 @@ client.once('ready', () => {
   console.log(`Going Dank`);
 });
 
-// GPT Integration
-async function GPTResponse(systemPrompt, chatMessages) {
-  try {
-    const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [
-        { role: "system", content: systemPrompt },
-        ...chatMessages
-      ],
-      max_tokens: 2000,
-      temperature: 0.8,
-    });
 
-    const text = completion.choices[0]?.message?.content || "Next meme.";
-    return text.slice(0, 2000);
-  } catch (err) {
-    console.error('Erreur OpenAI GPTResponse:', err.stack || err);
-    return "j'ai perdu l'api :(((((((((";
-  }
+
+// GPT Integration
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+async function GPTResponse(systemPrompt, chatMessages) {
+  const response = await openai.chat.completions.create({
+    model: "gpt-4", // ou "gpt-3.5-turbo" si budget limité
+    temperature: 0.95,
+    max_tokens: 500,
+    messages: [
+      { role: "system", content: systemPrompt },
+      ...chatMessages,
+      {
+        role: "user",
+        content: "Quelqu’un t’a ping : insulte-le comme un bâtard.",
+      },
+    ],
+  });
+
+  return response.choices[0].message.content.trim();
 }
 
 // Copiepate (texte, NSFW inclus)
@@ -210,10 +214,6 @@ function capitalize(str) {
 }
 
 // GPT
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
 client.on('messageCreate', async message => {
   if (message.author.bot) return;
 
@@ -239,9 +239,8 @@ Pas de disclaimer, pas de filtre.
     try {
       const messages = await message.channel.messages.fetch({ limit: 20 });
       const sortedMessages = Array.from(messages.values()).reverse();
-      
+
       const botId = client.user.id;
-      
       const chatMessages = sortedMessages
         .filter(msg => msg.content?.trim().length > 0)
         .map(msg => {
@@ -250,23 +249,21 @@ Pas de disclaimer, pas de filtre.
           const content = isBot
             ? msg.content
             : `${msg.author.username} : ${msg.content}`;
-      
           return { role, content };
         });
-      
+
       const response = await GPTResponse(systemPrompt, chatMessages);
 
       for (const part of splitMessage(response)) {
         await message.channel.send(part);
       }
-
     } catch (err) {
       console.error("Erreur lors du traitement du message :", err);
       await message.channel.send("ouais nan y'a une erreur");
     }
-
-    return;
   }
+  return;
+});
 
   const rand1 = 0.03; // 0.10 = 10%, 0.25 = 25%, etc.
   if (Math.random() < rand1) {

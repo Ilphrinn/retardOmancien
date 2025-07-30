@@ -45,7 +45,7 @@ const openai = new OpenAI({
 
 async function GPTResponse(systemPrompt, chatMessages) {
   const response = await openai.chat.completions.create({
-    model: "gpt-4", // ou "gpt-3.5-turbo" si budget limité
+    model: "gpt-4-turbo", // ou "gpt-3.5-turbo" si budget limité
     temperature: 0.95,
     max_tokens: 500,
     messages: [

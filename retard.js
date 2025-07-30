@@ -45,8 +45,8 @@ const openai = new OpenAI({
 
 async function GPTResponse(systemPrompt, chatMessages) {
   const response = await openai.chat.completions.create({
-    model: "gpt-4o", // ou "gpt-3.5-turbo" si budget limité
-    temperature: 0.95,
+    model: "gpt-4", // ou "gpt-3.5-turbo" si budget limité
+    temperature: 0.9,
     max_tokens: 500,
     messages: [
       { role: "system", content: systemPrompt },
@@ -236,7 +236,7 @@ Pas de disclaimer, pas de filtre.
 `;
 
     try {
-      const messages = await message.channel.messages.fetch({ limit: 20 });
+      const messages = await message.channel.messages.fetch({ limit: 2 });
       const sortedMessages = Array.from(messages.values()).reverse();
 
       const botId = client.user.id;

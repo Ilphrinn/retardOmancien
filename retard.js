@@ -237,15 +237,19 @@ N’utilise jamais un ton académique ni robotique, reste spontané en permanenc
       const messages = await message.channel.messages.fetch({ limit: 20 });
       const sortedMessages = Array.from(messages.values()).reverse();
       
+      const botId = client.user.id;
+      
       const chatMessages = sortedMessages
         .filter(msg => msg.content?.trim().length > 0)
-        .map(msg => ({
-          role: msg.author.bot ? "assistant" : "user",
-          content: msg.author.bot
-            ? msg.content // pas de nom pour le bot
-            : `${msg.author.username} : ${msg.content}` // nom pour les utilisateurs
-        }));
-
+        .map(msg => {
+          const role = msg.author.id === botId ? "assistant" : "user";
+          const content = role === "user"
+            ? `${msg.author.username} : ${msg.content}` // Nom pour les utilisateurs
+            : msg.content; // PAS de nom pour le bot
+      
+          return { role, content };
+        });
+      
       const response = await GPTResponse(systemPrompt, chatMessages);
 
       for (const part of splitMessage(response)) {

@@ -204,6 +204,7 @@ async function GPTResponse(systemPrompt, chatMessages) {
       max_tokens: 2000,
       temperature: 0.8,
     });
+
     const text = completion.choices[0]?.message?.content || "Next meme.";
     return text.slice(0, 2000);
   } catch (err) {

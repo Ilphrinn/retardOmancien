@@ -36,6 +36,27 @@ client.once('ready', () => {
   console.log(`Going Dank`);
 });
 
+// GPT Integration
+async function GPTResponse(systemPrompt, chatMessages) {
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [
+        { role: "system", content: systemPrompt },
+        ...chatMessages
+      ],
+      max_tokens: 2000,
+      temperature: 0.8,
+    });
+
+    const text = completion.choices[0]?.message?.content || "Next meme.";
+    return text.slice(0, 2000);
+  } catch (err) {
+    console.error('Erreur OpenAI GPTResponse:', err.stack || err);
+    return "API down, prochaine blague s'il te plaît.";
+  }
+}
+
 // Copiepate (texte, NSFW inclus)
 const sentCopiepates = new Set();
 const MAX_COPIE_HISTORY = 200;

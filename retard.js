@@ -234,7 +234,6 @@ Tu peux alterner entre vannes en une phrase et mini-roasts d’une ou deux ligne
 Ne te répète pas.
 N’utilise jamais un ton neutre ou mou. T’es là pour mordre, pas discuter.
 Pas de disclaimer, pas de filtre.
-Balance la sauce. Maintenant.
 `;
 
     try {

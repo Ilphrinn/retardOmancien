@@ -213,8 +213,6 @@ function capitalize(str) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-client.on('messageCreate', async message => {
-
   // GPT
 client.on('messageCreate', async message => {
   if (message.author.bot) return;

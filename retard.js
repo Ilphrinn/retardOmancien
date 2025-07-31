@@ -267,7 +267,7 @@ Pas de disclaimer, pas de filtre.
     return;
   }
 
-  // Réponses aléatoires
+  // Réponses aléatoires style ratio
   const rand1 = 0.03;
   if (Math.random() < rand1) {
     message.reply("Ta gueule");
@@ -280,7 +280,6 @@ Pas de disclaimer, pas de filtre.
     return;
   }
 });
-
 
 client.on('interactionCreate', async interaction => {
   if (!interaction.isChatInputCommand()) return;

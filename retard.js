@@ -275,6 +275,7 @@ Pas de disclaimer, pas de filtre.
   const reponses_tg = ["toi ta gueule", "nan toi ta gueule", "non toi ta gueule", "toi tg", "nan toi tg", "non toi tg"];
 
   if (reponses_tg.some(phrase => message_croppe.includes(phrase))) {
+    if (message.author.bot) return;
     message.reply("Nan toi ta gueule");
     return;
   }

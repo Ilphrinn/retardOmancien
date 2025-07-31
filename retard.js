@@ -237,7 +237,7 @@ Pas de disclaimer, pas de filtre.
 `;
 
     try {
-      const messages = await message.channel.messages.fetch({ limit: 20 });
+      const messages = await message.channel.messages.fetch({ limit: 5 });
       const sortedMessages = Array.from(messages.values()).reverse();
 
       const botId = client.user.id;

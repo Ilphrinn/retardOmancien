@@ -399,3 +399,5 @@ client.once('ready', () => {
 });
 
 client.login(DISCORD_TOKEN);
+
+//git add . && git commit -m "e" && git push

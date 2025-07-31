@@ -271,9 +271,10 @@ Pas de disclaimer, pas de filtre.
     return;
   }
 
-  if (message.content.toLowerCase().trim().replace(/\s+/g, ' ') == "nan toi ta gueule" ||
-      message.content.toLowerCase().trim().replace(/\s+/g, ' ') == "nan toi ta gueule" ||
-      message.content.toLowerCase().trim().replace(/\s+/g, ' ') == "toi ta gueule") {
+  const message_croppe = message.content.toLowerCase().trim().replace(/\s+/g, ' ');
+  const reponse_tg = ["toi ta gueule", "nan toi ta gueule", "non toi ta gueule", "toi tg", "nan toi tg", "non toi tg"];
+
+  if (message_croppe.includes(reponse_tg)) {
     message.reply("Nan toi ta gueule");
     return;
   }

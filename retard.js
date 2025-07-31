@@ -271,13 +271,13 @@ Pas de disclaimer, pas de filtre.
     return;
   }
 
-const message_croppe = message.content.toLowerCase().trim().replace(/\s+/g, ' ');
-const reponses_tg = ["toi ta gueule", "nan toi ta gueule", "non toi ta gueule", "toi tg", "nan toi tg", "non toi tg"];
+  const message_croppe = message.content.toLowerCase().trim().replace(/\s+/g, ' ');
+  const reponses_tg = ["toi ta gueule", "nan toi ta gueule", "non toi ta gueule", "toi tg", "nan toi tg", "non toi tg"];
 
-if (reponses_tg.some(phrase => message_croppe.includes(phrase))) {
-  message.reply("Nan toi ta gueule");
-  return;
-}
+  if (reponses_tg.some(phrase => message_croppe.includes(phrase))) {
+    message.reply("Nan toi ta gueule");
+    return;
+  }
 
   const rand2 = 0.01;
   if (Math.random() < rand2) {

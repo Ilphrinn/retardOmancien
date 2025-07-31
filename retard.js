@@ -215,7 +215,6 @@ function capitalize(str) {
 
   // GPT
 client.on('messageCreate', async message => {
-  if (message.author.bot) return;
 
   if (message.mentions.has(client.user)) {
     const isQuestion = message.content.trim().endsWith("?");
@@ -266,13 +265,19 @@ Pas de disclaimer, pas de filtre.
   }
 
   // Réponses aléatoires style ratio
-  const rand1 = 0.03;
+  const rand1 = 0.02;
   if (Math.random() < rand1) {
     message.reply("Ta gueule");
     return;
   }
 
-  const rand2 = 0.03;
+  if (message.content.toLowerCase().trim().replace(/\s+/g, ' ') == "nan toi ta gueule" ||
+      message.content.toLowerCase().trim().replace(/\s+/g, ' ') == "non toi ta gueule") {
+    message.reply("Nan toi ta gueule");
+    return;
+  }
+
+  const rand2 = 0.01;
   if (Math.random() < rand2) {
     message.reply("Ratio");
     return;

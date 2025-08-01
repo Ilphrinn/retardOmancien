@@ -273,13 +273,17 @@ Pas de disclaimer, pas de filtre.
     return;
   }
 
-  const message_croppe = message.content.toLowerCase().trim().replace(/\s+/g, ' ');
-  const reponses_tg = ["toi ta gueule", "nan toi ta gueule", 
-  "non toi ta gueule", "toi tg", "nan toi tg", "non toi tg", 
-  "vos gueules", "vos gueule", "ta gueule", "tg", "ftg", "ferme ta gueule"];
+  const cleanMessage = message.content.toLowerCase().trim().replace(/\s+/g, ' ');
 
-  if (reponses_tg.some(phrase => message_croppe.includes(phrase))) {
-    if (message.author.bot) return;
+  const triggers = [
+    "ta gueule", "toi ta gueule", "nan toi ta gueule", "non toi ta gueule",
+    "toi tg", "nan toi tg", "non toi tg", "vos gueules", "vos gueule",
+    "tg", "ftg", "ferme ta gueule"
+  ];
+
+  const match = triggers.some(phrase => new RegExp(`^${phrase}$`).test(cleanMessage));
+
+  if (match) {
     message.reply("Nan toi ta gueule");
     return;
   }
@@ -324,11 +328,9 @@ else if (name === 'insulte') {
     ? `Quelqu’un a osé utiliser la commande /insulte contre toi. Mais t’es le Retardomancien. Tu vas venger ton honneur en insultant ${trueTarget.username} encore plus fort que d’habitude.
 Écris une insulte impitoyable, brutale, méchante, salée, drôle et humiliante. Tu peux aller plus loin que d’habitude. Une ou deux phrases max. Pas de nom dans le texte, juste du carnage.
 Dis bien a ce batard de pas te ping`
-    : `Tu es le Retardomancien. Tu es cruel, créatif et impitoyable. 
-Tu dois générer une insulte stylée, méchante, brutale, drôle, énervée, et originale.
-Pas besoin de prénom, pas de @username, pas de politesse, pas d’intro. Juste l’insulte.
-Tu ne parles qu’à la cible. N’écris pas de nom. Ne salue pas. Ne conclus pas.
-Juste une dinguerie, ou deux phrases maximum.`;
+    : `Quelqu’un a osé utiliser la commande /insulte. Mais t’es le Retardomancien. Tu vas venger ton honneur en insultant ${trueTarget.username} encore plus fort que d’habitude.
+Écris une insulte impitoyable, brutale, méchante, salée, drôle et humiliante. Tu peux aller plus loin que d’habitude. Une ou deux phrases max. Pas de nom dans le texte, juste du carnage.
+Dis bien a ce batard`;
 
   const chatMessages = [
     {

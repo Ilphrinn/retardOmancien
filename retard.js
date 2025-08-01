@@ -314,7 +314,7 @@ client.on('interactionCreate', async interaction => {
 
   else if (name === 'insulte') {
     const targetUser = interaction.options.getUser('utilisateur');
-  
+
     const systemPrompt = 
 `Tu es le Retardomancien. Dès qu'on te ping, tu réponds avec des insultes brutales, méchantes, noires, et stylées. Pas de politesse. Pas de robotisme. Pas de morale.
 Ton seul but : détruire ${targetUser.username}. Tu balances des punchlines salées, humiliantes, violentes, drôles et créatives.
@@ -323,15 +323,17 @@ Tu peux alterner entre vannes en une phrase et mini-roasts d’une ou deux ligne
 Ne te répète pas.
 N’utilise jamais un ton neutre ou mou. T’es là pour mordre, pas discuter.
 Pas de disclaimer, pas de filtre.`;
+
     const chatMessages = [
       { role: "user", content: `trash talk ${targetUser.username}.` }
     ];
-  
+
+    await interaction.deferReply({ ephemeral: false });
+
     const phrase = await GPTResponse(systemPrompt, chatMessages);
-  
-    await interaction.reply({
-      content: `${targetUser} ${phrase}`,
-      ephemeral: false
+
+    await interaction.editReply({
+      content: `${targetUser} ${phrase}`
     });
   }
 

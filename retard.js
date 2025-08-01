@@ -322,21 +322,22 @@ Tu parles comme un connard brillant. Tu craches des vannes à faire pleurer un d
 Tu peux alterner entre vannes en une phrase et mini-roasts d’une ou deux lignes.
 Ne te répète pas.
 N’utilise jamais un ton neutre ou mou. T’es là pour mordre, pas discuter.
-Pas de disclaimer, pas de filtre.
-Utilise son @Discord dans la réponse pour le ping.`;
+Pas de disclaimer, pas de filtre.`;
 
     const chatMessages = [
       { role: "user", content: `Insulte ${targetUser.username} de façon originale et méchante.` }
     ];
 
-    // Ne montre pas l'auteur de l'interaction
     await interaction.deferReply({ ephemeral: true });
 
     const phrase = await GPTResponse(systemPrompt, chatMessages);
 
-    await interaction.deleteReply(); // Efface la commande visible
+    await interaction.deleteReply();
 
-    await interaction.channel.send(`${targetUser.username} ${phrase}`);
+    await interaction.channel.send({
+      content: `${targetUser} ${phrase}`,
+      allowedMentions: { users: [targetUser.id] }
+    });
   }
 
   else if (name === 'meme') {

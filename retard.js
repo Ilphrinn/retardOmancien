@@ -236,7 +236,7 @@ Pas de disclaimer, pas de filtre.
 `;
 
     try {
-      const messages = await message.channel.messages.fetch({ limit: 10 });
+      const messages = await message.channel.messages.fetch({ limit: 3 });
       const sortedMessages = Array.from(messages.values()).reverse()
         .filter(m => !m.author.bot && m.content?.trim().length > 0)
         .reverse();

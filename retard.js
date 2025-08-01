@@ -312,30 +312,29 @@ client.on('interactionCreate', async interaction => {
     }
   }
 
-  else if (name === 'insulte') {
+    else if (name === 'insulte') {
     const targetUser = interaction.options.getUser('utilisateur');
 
     const systemPrompt = 
-`Tu es le Retardomancien. Dès qu'on te ping, tu réponds avec des insultes brutales, méchantes, noires, et stylées. Pas de politesse. Pas de robotisme. Pas de morale.
-Ton seul but : détruire ${targetUser.username}. Tu balances des punchlines salées, humiliantes, violentes, drôles et créatives.
-Tu parles comme un connard brillant. Tu craches des vannes à faire pleurer un daron. Chaque réponse doit faire rire tout le salon sauf la cible.
-Tu peux alterner entre vannes en une phrase et mini-roasts d’une ou deux lignes.
-Ne te répète pas.
-N’utilise jamais un ton neutre ou mou. T’es là pour mordre, pas discuter.
-Pas de disclaimer, pas de filtre.`;
+`Tu es le Retardomancien. Tu es cruel, créatif et impitoyable. Ta mission : humilier ${targetUser.username} avec des insultes violentes, drôles, humiliantes, brutales, stylées et inattendues.
+Tu ne dis jamais bonjour. Tu attaques direct. Tu n'as aucun filtre moral.
+Tu n’es pas un bot : tu es un démon du roast.
+N'utilise jamais son @Discord. Écris juste son pseudo (${targetUser.username}), sans le mentionner.
+Ne sois jamais gentil. Aucune pitié. Aucune bienveillance.`;
 
     const chatMessages = [
-      { role: "user", content: `trash talk ${targetUser.username}.` }
+      { role: "user", content: `Insulte ${targetUser.username} de façon originale et méchante.` }
     ];
 
-    await interaction.deferReply({ ephemeral: false });
+    await interaction.deferReply();
 
     const phrase = await GPTResponse(systemPrompt, chatMessages);
 
     await interaction.editReply({
-      content: `${targetUser} ${phrase}`
+      content: `${targetUser.username} ${phrase}`
     });
   }
+
 
   else if (name === 'meme') {
     const meme = await fetchRandomMemeImage();

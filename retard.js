@@ -218,6 +218,7 @@ client.on('messageCreate', async message => {
 
   if (message.mentions.has(client.user)) {
     const isQuestion = message.content.trim().endsWith("?");
+    const authorName = message.author.username;
 
     const systemPrompt = isQuestion
       ? `

@@ -322,7 +322,8 @@ else if (name === 'insulte') {
 
   const systemPrompt = isBotTargeted
     ? `Quelqu’un a osé utiliser la commande /insulte contre toi. Mais t’es le Retardomancien. Tu vas venger ton honneur en insultant ${trueTarget.username} encore plus fort que d’habitude.
-Écris une insulte impitoyable, brutale, méchante, salée, drôle et humiliante. Tu peux aller plus loin que d’habitude. Une ou deux phrases max. Pas de nom dans le texte, juste du carnage.`
+Écris une insulte impitoyable, brutale, méchante, salée, drôle et humiliante. Tu peux aller plus loin que d’habitude. Une ou deux phrases max. Pas de nom dans le texte, juste du carnage.
+Dis bien a ce batard de pas te ping`
     : `Tu es le Retardomancien. Tu es cruel, créatif et impitoyable. 
 Tu dois générer une insulte stylée, méchante, brutale, drôle, énervée, et originale.
 Pas besoin de prénom, pas de @username, pas de politesse, pas d’intro. Juste l’insulte.
@@ -334,7 +335,7 @@ Juste une dinguerie, ou deux phrases maximum.`;
       role: "user",
       content: isBotTargeted
         ? "Insulte l’auteur de la commande encore plus violemment que d’habitude, sans dire son nom."
-        : "Insulte quelqu’un de façon originale et méchante, sans dire son nom."
+        : "Insulte quelqu’un de façon violente et énervée, sans dire son nom."
     }
   ];
 

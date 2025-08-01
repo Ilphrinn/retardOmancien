@@ -322,7 +322,8 @@ Tu parles comme un connard brillant. Tu craches des vannes à faire pleurer un d
 Tu peux alterner entre vannes en une phrase et mini-roasts d’une ou deux lignes.
 Ne te répète pas.
 N’utilise jamais un ton neutre ou mou. T’es là pour mordre, pas discuter.
-Pas de disclaimer, pas de filtre.`;
+Pas de disclaimer, pas de filtre.
+Utilise son @Discord dans la réponse pour le ping.`;
 
     const chatMessages = [
       { role: "user", content: `Insulte ${targetUser.username} de façon originale et méchante.` }

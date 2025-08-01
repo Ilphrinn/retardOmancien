@@ -236,8 +236,10 @@ Pas de disclaimer, pas de filtre.
 `;
 
     try {
-      const messages = await message.channel.messages.fetch({ limit: 5 });
-      const sortedMessages = Array.from(messages.values()).reverse();
+      const messages = await message.channel.messages.fetch({ limit: 10 });
+      const sortedMessages = Array.from(messages.values()).reverse()
+        .filter(m => !m.author.bot && m.content?.trim().length > 0)
+        .reverse();
 
       const botId = client.user.id;
       const chatMessages = sortedMessages
@@ -312,31 +314,41 @@ client.on('interactionCreate', async interaction => {
     }
   }
 
-  else if (name === 'insulte') {
-    const targetUser = interaction.options.getUser('utilisateur');
+else if (name === 'insulte') {
+  const targetUser = interaction.options.getUser('utilisateur');
 
-    const systemPrompt = 
-`Tu es le Retardomancien. Tu es cruel, créatif et impitoyable. 
-Tu dois générer une insulte stylée, méchante, brutale, drôle, énervées, et originale.
+  const isBotTargeted = targetUser.id === client.user.id;
+  const trueTarget = isBotTargeted ? interaction.user : targetUser;
+
+  const systemPrompt = isBotTargeted
+    ? `Quelqu’un a osé utiliser la commande /insulte contre toi. Mais t’es le Retardomancien. Tu vas venger ton honneur en insultant ${trueTarget.username} encore plus fort que d’habitude.
+Écris une insulte impitoyable, brutale, méchante, salée, drôle et humiliante. Tu peux aller plus loin que d’habitude. Une ou deux phrases max. Pas de nom dans le texte, juste du carnage.`
+    : `Tu es le Retardomancien. Tu es cruel, créatif et impitoyable. 
+Tu dois générer une insulte stylée, méchante, brutale, drôle, énervée, et originale.
 Pas besoin de prénom, pas de @username, pas de politesse, pas d’intro. Juste l’insulte.
 Tu ne parles qu’à la cible. N’écris pas de nom. Ne salue pas. Ne conclus pas.
 Juste une dinguerie, ou deux phrases maximum.`;
 
-    const chatMessages = [
-      { role: "user", content: `Insulte quelqu’un de façon originale et méchante, sans dire son nom.` }
-    ];
+  const chatMessages = [
+    {
+      role: "user",
+      content: isBotTargeted
+        ? "Insulte l’auteur de la commande encore plus violemment que d’habitude, sans dire son nom."
+        : "Insulte quelqu’un de façon originale et méchante, sans dire son nom."
+    }
+  ];
 
-    await interaction.deferReply({ ephemeral: true });
+  await interaction.deferReply({ ephemeral: true });
 
-    const phrase = await GPTResponse(systemPrompt, chatMessages);
+  const phrase = await GPTResponse(systemPrompt, chatMessages);
 
-    await interaction.deleteReply();
+  await interaction.deleteReply();
 
-    await interaction.channel.send({
-      content: `${targetUser} ${phrase}`,
-      allowedMentions: { users: [targetUser.id] }
-    });
-  }
+  await interaction.channel.send({
+    content: `${trueTarget}, ${phrase}`,
+    allowedMentions: { users: [trueTarget.id] }
+  });
+}
 
   else if (name === 'meme') {
     const meme = await fetchRandomMemeImage();

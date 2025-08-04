@@ -3,6 +3,8 @@ const { Client, GatewayIntentBits } = require('discord.js');
 const Snoowrap = require('snoowrap');
 const { OpenAI } = require('openai');
 const puppeteer = require('puppeteer');
+const axios = require('axios');
+const path = require('path');
 
 // Durée de vie du cache (5 minutes)
 const CACHE_TTL = 5 * 60 * 1000;
@@ -386,13 +388,36 @@ Dis bien a ce batard`;
         }]
       });
     } else {
-      await interaction.channel.send({
-        embeds: [{
-          title: meme.title,
-          image: { url: meme.url },
-          footer: { text: `r/${meme.subreddit}` }
-        }]
-      });
+      try {
+        const res = await axios.get(meme.url, { responseType: 'arraybuffer' });
+        const urlPath = new URL(meme.url).pathname;
+        let ext = path.extname(urlPath);
+        if (!ext) ext = meme.type === 'video' ? '.mp4' : '.png';
+        const filename = `meme${ext}`;
+        const file = { attachment: Buffer.from(res.data), name: filename };
+
+        if (meme.type === 'image') {
+          await interaction.channel.send({
+            embeds: [{
+              title: meme.title,
+              image: { url: `attachment://${filename}` },
+              footer: { text: `r/${meme.subreddit}` }
+            }],
+            files: [file]
+          });
+        } else {
+          await interaction.channel.send({
+            embeds: [{
+              title: meme.title,
+              footer: { text: `r/${meme.subreddit}` }
+            }],
+            files: [file]
+          });
+        }
+      } catch (err) {
+        console.error('Erreur lors du téléchargement du meme :', err);
+        await interaction.channel.send(meme.url);
+      }
     }
   }
 

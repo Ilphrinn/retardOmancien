@@ -13,7 +13,7 @@ if (!DISCORD_TOKEN || !CLIENT_ID) {
 const commands = [
   new SlashCommandBuilder().setName('curse').setDescription('Active Curse of Ra'),
   new SlashCommandBuilder().setName('copiepate').setDescription('Reçoit une copiepasta'),
-  new SlashCommandBuilder().setName('meme').setDescription('Reçoit un meme'),
+  new SlashCommandBuilder().setName('meme').setDescription('Reçoit un meme (image ou vidéo)'),
   new SlashCommandBuilder().setName('ascii').setDescription('Envoie un ASCII random'),
   new SlashCommandBuilder()
     .setName('insulte')

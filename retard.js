@@ -388,6 +388,17 @@ Dis bien a ce batard`;
             'Referer': 'https://www.reddit.com'
           }
         });
+    } else if (meme.type === 'video') {
+      await interaction.channel.send({
+        content: meme.url,
+        embeds: [{
+          title: meme.title,
+          footer: { text: `r/${meme.subreddit}` }
+        }]
+      });
+    } else {
+      try {
+        const res = await axios.get(meme.url, { responseType: 'arraybuffer' });
         const urlPath = new URL(meme.url).pathname;
         let ext = path.extname(urlPath);
         if (!ext) ext = meme.type === 'video' ? '.mp4' : '.png';
@@ -406,6 +417,10 @@ Dis bien a ce batard`;
         } else {
           await interaction.channel.send({
             content: `${meme.title} — r/${meme.subreddit}`,
+            embeds: [{
+              title: meme.title,
+              footer: { text: `r/${meme.subreddit}` }
+            }],
             files: [file]
           });
         }

@@ -1,7 +1,6 @@
 const { Client, GatewayIntentBits } = require('discord.js');
 const Snoowrap = require('snoowrap');
 const { OpenAI } = require('openai');
-const axios = require('axios');
 const puppeteer = require('puppeteer');
 
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
@@ -14,7 +13,7 @@ function splitMessage(str, size = 2000) {
   return parts;
 }
 
-const { DISCORD_TOKEN, CLIENT_ID } = process.env;
+const { DISCORD_TOKEN } = process.env;
 
 const reddit = new Snoowrap({
   userAgent: 'retardOmancienBot/1.0 by a retard',
@@ -32,11 +31,11 @@ const client = new Client({
   ]
 });
 
-client.once('ready', () => {
-  console.log(`Going Dank`);
-});
-
-
+const triggerSet = new Set([
+  "ta gueule", "toi ta gueule", "nan toi ta gueule", "non toi ta gueule",
+  "toi tg", "nan toi tg", "non toi tg", "vos gueules", "vos gueule",
+  "tg", "ftg", "ferme ta gueule"
+]);
 
 // GPT Integration
 const openai = new OpenAI({
@@ -85,17 +84,9 @@ async function fetchRandomCopiepate() {
       )
     );
 
-    const flat = all.flat();
-    const unique = [];
-    const seenIds = new Set();
-    for (const post of flat) {
-      if (!seenIds.has(post.id)) {
-        seenIds.add(post.id);
-        unique.push(post);
-      }
-    }
-
-    posts = unique;
+    posts = Array.from(
+      new Map(all.flat().map(post => [post.id, post])).values()
+    );
 
     copiepateCache[cacheKey] = {
       timestamp: now,
@@ -274,15 +265,7 @@ client.on('messageCreate', async message => {
 
   const cleanMessage = message.content.toLowerCase().trim().replace(/\s+/g, ' ');
 
-  const triggers = [
-    "ta gueule", "toi ta gueule", "nan toi ta gueule", "non toi ta gueule",
-    "toi tg", "nan toi tg", "non toi tg", "vos gueules", "vos gueule",
-    "tg", "ftg", "ferme ta gueule"
-  ];
-
-  const match = triggers.some(phrase => new RegExp(`^${phrase}$`).test(cleanMessage));
-
-  if (match) {
+  if (triggerSet.has(cleanMessage)) {
     if (message.author.bot) return;
     message.reply("Nan toi ta gueule");
     return;

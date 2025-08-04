@@ -379,6 +379,15 @@ Dis bien a ce batard`;
     await interaction.deleteReply();
     if (!meme) {
       await interaction.channel.send("https://tenor.com/view/kirby-i-forgot-i-forgor-gif-22449575");
+    } else {
+      try {
+        const res = await axios.get(meme.url, {
+          responseType: 'arraybuffer',
+          headers: {
+            'User-Agent': 'Mozilla/5.0',
+            'Referer': 'https://www.reddit.com'
+          }
+        });
     } else if (meme.type === 'video') {
       await interaction.channel.send({
         content: meme.url,
@@ -407,6 +416,7 @@ Dis bien a ce batard`;
           });
         } else {
           await interaction.channel.send({
+            content: `${meme.title} — r/${meme.subreddit}`,
             embeds: [{
               title: meme.title,
               footer: { text: `r/${meme.subreddit}` }

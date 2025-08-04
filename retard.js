@@ -244,7 +244,7 @@ function capitalize(str) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-  // GPT
+// GPT
 client.on('messageCreate', async message => {
 
   // Quand le bot est mentionné
@@ -338,40 +338,40 @@ client.on('interactionCreate', async interaction => {
     }
   }
 
-else if (name === 'insulte') {
-  const targetUser = interaction.options.getUser('utilisateur');
+  else if (name === 'insulte') {
+    const targetUser = interaction.options.getUser('utilisateur');
 
-  const isBotTargeted = targetUser.id === client.user.id;
-  const trueTarget = isBotTargeted ? interaction.user : targetUser;
+    const isBotTargeted = targetUser.id === client.user.id;
+    const trueTarget = isBotTargeted ? interaction.user : targetUser;
 
-  const systemPrompt = isBotTargeted
-    ? `Quelqu’un a osé utiliser la commande /insulte contre toi. Mais t’es le Retardomancien. Tu vas venger ton honneur en insultant ${trueTarget.username} encore plus fort que d’habitude.
+    const systemPrompt = isBotTargeted
+      ? `Quelqu’un a osé utiliser la commande /insulte contre toi. Mais t’es le Retardomancien. Tu vas venger ton honneur en insultant ${trueTarget.username} encore plus fort que d’habitude.
 Écris une insulte impitoyable, brutale, méchante, salée, drôle et humiliante. Tu peux aller plus loin que d’habitude. Une ou deux phrases max. Pas de nom dans le texte, juste du carnage.
 Dis bien a ce batard de pas te ping`
-    : `Quelqu’un a osé utiliser la commande /insulte. Mais t’es le Retardomancien. Tu vas venger ton honneur en insultant ${trueTarget.username} encore plus fort que d’habitude.
+      : `Quelqu’un a osé utiliser la commande /insulte. Mais t’es le Retardomancien. Tu vas venger ton honneur en insultant ${trueTarget.username} encore plus fort que d’habitude.
 Écris une insulte impitoyable, brutale, méchante, salée, drôle et humiliante. Tu peux aller plus loin que d’habitude. Une ou deux phrases max. Pas de nom dans le texte, juste du carnage.
 Dis bien a ce batard`;
 
-  const chatMessages = [
-    {
-      role: "user",
-      content: isBotTargeted
-        ? "Insulte l’auteur de la commande encore plus violemment que d’habitude, sans dire son nom."
-        : "Insulte quelqu’un de façon violente et énervée, sans dire son nom."
-    }
-  ];
+    const chatMessages = [
+      {
+        role: "user",
+        content: isBotTargeted
+          ? "Insulte l’auteur de la commande encore plus violemment que d’habitude, sans dire son nom."
+          : "Insulte quelqu’un de façon violente et énervée, sans dire son nom."
+      }
+    ];
 
-  await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ ephemeral: true });
 
-  const phrase = await GPTResponse(systemPrompt, chatMessages);
+    const phrase = await GPTResponse(systemPrompt, chatMessages);
 
-  await interaction.deleteReply();
+    await interaction.deleteReply();
 
-  await interaction.channel.send({
-    content: `${trueTarget}, ${phrase}`,
-    allowedMentions: { users: [trueTarget.id] }
-  });
-}
+    await interaction.channel.send({
+      content: `${trueTarget}, ${phrase}`,
+      allowedMentions: { users: [trueTarget.id] }
+    });
+  }
 
   else if (name === 'meme') {
     const meme = await fetchRandomMeme();
@@ -379,116 +379,105 @@ Dis bien a ce batard`;
     await interaction.deleteReply();
     if (!meme) {
       await interaction.channel.send("https://tenor.com/view/kirby-i-forgot-i-forgor-gif-22449575");
-    } else {
+    } 
+    if (name === 'ascii') {
+  try {
+    await interaction.deferReply({ ephemeral: true });
+
+    const maxTries = 5;
+    const maxPages = 53;
+    let attempt = 0;
+    let values = [];
+
+    while (values.length === 0 && attempt < maxTries) {
+      attempt++;
+      const randomPage = Math.floor(Math.random() * maxPages) + 1;
+      const url = `https://www.twitchquotes.com/copypastas/ascii-art?page=${randomPage}`;
+
+      const browser = await puppeteer.launch({
+        headless: "new",
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
+      });
+
+      const page = await browser.newPage();
+      await page.setUserAgent("Mozilla/5.0");
+      await page.goto(url, { waitUntil: "domcontentloaded" });
+
       try {
-        const res = await axios.get(meme.url, {
-          responseType: 'arraybuffer',
-          headers: {
-            'User-Agent': 'Mozilla/5.0',
-            'Referer': 'https://www.reddit.com'
-          }
-        });
+        await page.waitForSelector('button.copy_to_clipboard_js', { timeout: 5000 });
+
+        values = await page.$$eval('button.copy_to_clipboard_js', buttons =>
+          buttons
+            .map(btn => btn.getAttribute("data-clipboard-text")?.trim())
+            .filter(text => text && text.length > 30)
+        );
+      } catch (err) {
+        console.warn(`Essai ${attempt} : aucun bouton détecté.`);
+      }
+
+      await browser.close();
+    }
+
+    await interaction.deleteReply();
+
+    if (values.length === 0) {
+      await interaction.channel.send("https://tenor.com/view/kirby-i-forgot-i-forgor-gif-22449575");
+    } else {
+      const random = values[Math.floor(Math.random() * values.length)];
+      const parts = splitMessage(random, 2000);
+      for (const part of parts) {
+        await interaction.channel.send(part);
+      }
+    }
+  } catch (err) {
+    console.error("Erreur Puppeteer ASCII :", err.message);
+    try {
+      await interaction.deleteReply();
+    } catch {}
+    await interaction.channel.send("Erreur lors du chargement de l'ASCII.");
+  }
+} else if (meme) {
+  try {
+    const res = await axios.get(meme.url, {
+      responseType: 'arraybuffer',
+      headers: {
+        'User-Agent': 'Mozilla/5.0',
+        'Referer': 'https://www.reddit.com'
+      }
+    });
+
+    const urlPath = new URL(meme.url).pathname;
+    let ext = path.extname(urlPath);
+    if (!ext) ext = meme.type === 'video' ? '.mp4' : '.png';
+    const filename = `meme${ext}`;
+    const file = { attachment: Buffer.from(res.data), name: filename };
+
+    if (meme.type === 'image') {
+      await interaction.channel.send({
+        embeds: [{
+          title: meme.title,
+          image: { url: `attachment://${filename}` },
+          footer: { text: `r/${meme.subreddit}` }
+        }],
+        files: [file]
+      });
     } else if (meme.type === 'video') {
       await interaction.channel.send({
-        content: meme.url,
+        content: `${meme.title} — r/${meme.subreddit}`,
         embeds: [{
           title: meme.title,
           footer: { text: `r/${meme.subreddit}` }
-        }]
+        }],
+        files: [file]
       });
     } else {
-      try {
-        const res = await axios.get(meme.url, { responseType: 'arraybuffer' });
-        const urlPath = new URL(meme.url).pathname;
-        let ext = path.extname(urlPath);
-        if (!ext) ext = meme.type === 'video' ? '.mp4' : '.png';
-        const filename = `meme${ext}`;
-        const file = { attachment: Buffer.from(res.data), name: filename };
-
-        if (meme.type === 'image') {
-          await interaction.channel.send({
-            embeds: [{
-              title: meme.title,
-              image: { url: `attachment://${filename}` },
-              footer: { text: `r/${meme.subreddit}` }
-            }],
-            files: [file]
-          });
-        } else {
-          await interaction.channel.send({
-            content: `${meme.title} — r/${meme.subreddit}`,
-            embeds: [{
-              title: meme.title,
-              footer: { text: `r/${meme.subreddit}` }
-            }],
-            files: [file]
-          });
-        }
-      } catch (err) {
-        console.error('Erreur lors du téléchargement du meme :', err);
-        await interaction.channel.send(meme.url);
-      }
+      await interaction.channel.send(meme.url);
     }
+  } catch (err) {
+    console.error('Erreur lors du téléchargement du meme :', err);
+    await interaction.channel.send(meme.url);
   }
-
-  else if (name === 'ascii') {
-    try {
-      await interaction.deferReply({ ephemeral: true });
-
-      const maxTries = 5;
-      const maxPages = 53;
-      let attempt = 0;
-      let values = [];
-
-      while (values.length === 0 && attempt < maxTries) {
-        attempt++;
-        const randomPage = Math.floor(Math.random() * maxPages) + 1;
-        const url = `https://www.twitchquotes.com/copypastas/ascii-art?page=${randomPage}`;
-
-        const browser = await puppeteer.launch({
-          headless: "new",
-          args: ['--no-sandbox', '--disable-setuid-sandbox']
-        });
-
-        const page = await browser.newPage();
-        await page.setUserAgent("Mozilla/5.0");
-        await page.goto(url, { waitUntil: "domcontentloaded" });
-
-        try {
-          await page.waitForSelector('button.copy_to_clipboard_js', { timeout: 5000 });
-
-          values = await page.$$eval('button.copy_to_clipboard_js', buttons =>
-            buttons
-              .map(btn => btn.getAttribute("data-clipboard-text")?.trim())
-              .filter(text => text && text.length > 30)
-          );
-        } catch (err) {
-          console.warn(`Essai ${attempt} : aucun bouton détecté.`);
-        }
-
-        await browser.close();
-      }
-
-      await interaction.deleteReply();
-
-      if (values.length === 0) {
-        await interaction.channel.send("https://tenor.com/view/kirby-i-forgot-i-forgor-gif-22449575");
-      } else {
-        const random = values[Math.floor(Math.random() * values.length)];
-        const parts = splitMessage(random, 2000);
-        for (const part of parts) {
-          await interaction.channel.send(part);
-        }
-      }
-    } catch (err) {
-      console.error("Erreur Puppeteer ASCII :", err.message);
-      try {
-        await interaction.deleteReply();
-      } catch {}
-      await interaction.channel.send("Erreur lors du chargement de l'ASCII.");
-    }
-  }
-});
+}
 
 // Confirmation dans la console quand le bot est prêt
 client.once('ready', () => {

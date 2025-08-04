@@ -3,6 +3,8 @@ const { Client, GatewayIntentBits } = require('discord.js');
 const Snoowrap = require('snoowrap');
 const { OpenAI } = require('openai');
 const puppeteer = require('puppeteer');
+const axios = require('axios');
+const path = require('path');
 
 // Durée de vie du cache (5 minutes)
 const CACHE_TTL = 5 * 60 * 1000;
@@ -140,7 +142,7 @@ async function fetchRandomCopiepate() {
   return random.selftext;
 }
 
-// Meme image (NSFW inclus)
+// Meme image ou vidéo (NSFW inclus)
 // Subreddits utilisés pour la recherche de memes
 const subredditsMemes = [
   'Discordmemes',
@@ -156,10 +158,10 @@ const MAX_HISTORY = 200;
 const subredditCache = {};
 
 /**
- * Récupère l’image d’un meme aléatoire parmi plusieurs subreddits.
+ * Récupère un meme aléatoire (image ou vidéo) parmi plusieurs subreddits.
  * Utilise un cache local pour limiter les requêtes Reddit.
  */
-async function fetchRandomMemeImage() {
+async function fetchRandomMeme() {
   const sub = randomItem(subredditsMemes);
   const now = Date.now();
 
@@ -190,18 +192,43 @@ async function fetchRandomMemeImage() {
   const offset = Math.floor(Math.random() * Math.max(1, posts.length / offsetStep)) * offsetStep;
   const slice = posts.slice(offset, offset + offsetStep);
 
-  const images = slice.filter(
-    post =>
-      post.url &&
-      /\.(jpg|jpeg|png|gif)$/.test(post.url) &&
-      !sentMemes.has(post.url)
-  );
+  const medias = slice
+    .map(post => {
+      const url = post.url || '';
+      if (post.is_video && post.media?.reddit_video?.fallback_url) {
+        return {
+          type: 'video',
+          url: post.media.reddit_video.fallback_url,
+          title: post.title,
+          subreddit: sub,
+        };
+      }
+      if (/\.gifv$/.test(url)) {
+        return {
+          type: 'video',
+          url: url.replace(/\.gifv$/, '.mp4'),
+          title: post.title,
+          subreddit: sub,
+        };
+      }
+      if (/\.(jpg|jpeg|png|gif)$/.test(url)) {
+        return {
+          type: 'image',
+          url,
+          title: post.title,
+          subreddit: sub,
+        };
+      }
+      return null;
+    })
+    .filter(Boolean)
+    .filter(m => !sentMemes.has(m.url));
 
-  if (images.length === 0) return null;
+  if (medias.length === 0) return null;
 
-  const random = randomItem(images);
+  const random = randomItem(medias);
 
-  // Historique pour ne pas renvoyer les mêmes images
+  // Historique pour ne pas renvoyer les mêmes médias
   sentMemes.add(random.url);
   if (sentMemes.size > MAX_HISTORY) {
     const arr = Array.from(sentMemes);
@@ -209,7 +236,7 @@ async function fetchRandomMemeImage() {
     arr.slice(-MAX_HISTORY).forEach(url => sentMemes.add(url));
   }
 
-  return { url: random.url, title: random.title, subreddit: sub };
+  return random;
 }
 
 // Helper pour capitaliser (nécessaire pour appeler `getHot`, `getNew`, etc.)
@@ -347,19 +374,45 @@ Dis bien a ce batard`;
 }
 
   else if (name === 'meme') {
-    const meme = await fetchRandomMemeImage();
+    const meme = await fetchRandomMeme();
     await interaction.deferReply({ ephemeral: true });
     await interaction.deleteReply();
     if (!meme) {
       await interaction.channel.send("https://tenor.com/view/kirby-i-forgot-i-forgor-gif-22449575");
     } else {
-      await interaction.channel.send({
-        embeds: [{
-          title: meme.title,
-          image: { url: meme.url },
-          footer: { text: `r/${meme.subreddit}` }
-        }]
-      });
+      try {
+        const res = await axios.get(meme.url, {
+          responseType: 'arraybuffer',
+          headers: {
+            'User-Agent': 'Mozilla/5.0',
+            'Referer': 'https://www.reddit.com'
+          }
+        });
+        const urlPath = new URL(meme.url).pathname;
+        let ext = path.extname(urlPath);
+        if (!ext) ext = meme.type === 'video' ? '.mp4' : '.png';
+        const filename = `meme${ext}`;
+        const file = { attachment: Buffer.from(res.data), name: filename };
+
+        if (meme.type === 'image') {
+          await interaction.channel.send({
+            embeds: [{
+              title: meme.title,
+              image: { url: `attachment://${filename}` },
+              footer: { text: `r/${meme.subreddit}` }
+            }],
+            files: [file]
+          });
+        } else {
+          await interaction.channel.send({
+            content: `${meme.title} — r/${meme.subreddit}`,
+            files: [file]
+          });
+        }
+      } catch (err) {
+        console.error('Erreur lors du téléchargement du meme :', err);
+        await interaction.channel.send(meme.url);
+      }
     }
   }
 

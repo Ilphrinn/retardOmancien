@@ -1,10 +1,16 @@
+// Import des dépendances principales
 const { Client, GatewayIntentBits } = require('discord.js');
 const Snoowrap = require('snoowrap');
 const { OpenAI } = require('openai');
 const puppeteer = require('puppeteer');
 
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+// Durée de vie du cache (5 minutes)
+const CACHE_TTL = 5 * 60 * 1000;
 
+/**
+ * Coupe une chaîne en morceaux de taille maximale ``size``.
+ * Permet d’envoyer des messages trop longs pour Discord.
+ */
 function splitMessage(str, size = 2000) {
   const parts = [];
   for (let i = 0; i < str.length; i += size) {
@@ -12,6 +18,13 @@ function splitMessage(str, size = 2000) {
   }
   return parts;
 }
+
+/**
+ * Renvoie un élément aléatoire d’un tableau.
+ * @param {Array} arr Tableau source
+ * @returns {*} élément aléatoire
+ */
+const randomItem = arr => arr[Math.floor(Math.random() * arr.length)];
 
 const { DISCORD_TOKEN } = process.env;
 
@@ -31,17 +44,23 @@ const client = new Client({
   ]
 });
 
+// Expressions qui provoquent une réponse automatique
 const triggerSet = new Set([
   "ta gueule", "toi ta gueule", "nan toi ta gueule", "non toi ta gueule",
   "toi tg", "nan toi tg", "non toi tg", "vos gueules", "vos gueule",
   "tg", "ftg", "ferme ta gueule"
 ]);
 
+// Constantes réutilisées pour les appels à l’API Reddit
+const TOP_TIMES = ['day', 'week', 'month', 'year', 'all'];
+const MEME_METHODS = ['hot', 'new', 'rising', 'top'];
+
 // GPT Integration
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+// Interroge l’API d’OpenAI et renvoie la réponse du modèle
 async function GPTResponse(systemPrompt, chatMessages) {
   const response = await openai.chat.completions.create({
     model: "gpt-4", // ou "gpt-3.5-turbo" si budget limité
@@ -61,37 +80,37 @@ async function GPTResponse(systemPrompt, chatMessages) {
 }
 
 // Copiepate (texte, NSFW inclus)
+// Historique des copiepastes déjà envoyées
 const sentCopiepates = new Set();
 const MAX_COPIE_HISTORY = 200;
 const copiepateCache = {};
 
+/**
+ * Récupère une copiepaste aléatoire depuis r/CopiePates.
+ * Les résultats sont mis en cache pour limiter les appels à l’API.
+ */
 async function fetchRandomCopiepate() {
   const now = Date.now();
-
-  const topTimes = ['day', 'week', 'month', 'year', 'all'];
   const cacheKey = 'CopiePates-multiTop';
-  const isCached = copiepateCache[cacheKey] && (now - copiepateCache[cacheKey].timestamp < CACHE_TTL);
+  const isCached =
+    copiepateCache[cacheKey] &&
+    now - copiepateCache[cacheKey].timestamp < CACHE_TTL;
 
   let posts;
-
   if (isCached) {
     posts = copiepateCache[cacheKey].posts;
   } else {
     const limit = 100;
     const all = await Promise.all(
-      topTimes.map(time =>
+      TOP_TIMES.map(time =>
         reddit.getSubreddit('CopiePates').getTop({ time, limit }).catch(() => [])
       )
     );
 
-    posts = Array.from(
-      new Map(all.flat().map(post => [post.id, post])).values()
-    );
+    // Évite les doublons en utilisant l’id du post comme clé
+    posts = Array.from(new Map(all.flat().map(p => [p.id, p])).values());
 
-    copiepateCache[cacheKey] = {
-      timestamp: now,
-      posts
-    };
+    copiepateCache[cacheKey] = { timestamp: now, posts };
   }
 
   const MAX_CHARS = 2000;
@@ -99,31 +118,30 @@ async function fetchRandomCopiepate() {
 
   const validPosts = posts.filter(post => {
     const text = post.selftext;
-    return (
-      text &&
-      text.length > 30 &&
-      text.length <= MAX_CHARS &&
-      text.split('\n').length <= MAX_LINES &&
-      !post.stickied &&
-      !sentCopiepates.has(text)
-    );
+    if (!text || text.length <= 30 || text.length > MAX_CHARS) return false;
+    if (text.split('\n').length > MAX_LINES) return false;
+    return !post.stickied && !sentCopiepates.has(text);
   });
 
-  if (validPosts.length === 0) return "https://tenor.com/view/kirby-i-forgot-i-forgor-gif-22449575";
+  if (validPosts.length === 0) {
+    return 'https://tenor.com/view/kirby-i-forgot-i-forgor-gif-22449575';
+  }
 
-  const random = validPosts[Math.floor(Math.random() * validPosts.length)];
+  const random = randomItem(validPosts);
 
+  // Historise les copiepastes envoyées pour éviter les répétitions
   sentCopiepates.add(random.selftext);
   if (sentCopiepates.size > MAX_COPIE_HISTORY) {
     const arr = Array.from(sentCopiepates);
     sentCopiepates.clear();
-    arr.slice(arr.length - MAX_COPIE_HISTORY).forEach(text => sentCopiepates.add(text));
+    arr.slice(-MAX_COPIE_HISTORY).forEach(text => sentCopiepates.add(text));
   }
 
   return random.selftext;
 }
 
 // Meme image (NSFW inclus)
+// Subreddits utilisés pour la recherche de memes
 const subredditsMemes = [
   'Discordmemes',
   'shitposting',
@@ -132,40 +150,39 @@ const subredditsMemes = [
   'MemeMan',
 ];
 
+// Historique des memes déjà envoyés
 const sentMemes = new Set();
 const MAX_HISTORY = 200;
 const subredditCache = {};
 
+/**
+ * Récupère l’image d’un meme aléatoire parmi plusieurs subreddits.
+ * Utilise un cache local pour limiter les requêtes Reddit.
+ */
 async function fetchRandomMemeImage() {
-  const sub = subredditsMemes[Math.floor(Math.random() * subredditsMemes.length)];
+  const sub = randomItem(subredditsMemes);
   const now = Date.now();
 
-  // Méthodes préférées selon diversité et rapidité
-  const methods = ['hot', 'new', 'rising', 'top'];
-  const chosenMethod = methods[Math.floor(Math.random() * methods.length)];
-
-  const topTimes = ['day', 'week', 'month', 'year', 'all'];
-  const time = topTimes[Math.floor(Math.random() * topTimes.length)];
-
-  let posts;
+  const chosenMethod = randomItem(MEME_METHODS);
+  const time = randomItem(TOP_TIMES);
 
   const cacheKey = `${sub}-${chosenMethod}-${time}`;
-  const isCached = subredditCache[cacheKey] && (now - subredditCache[cacheKey].timestamp < CACHE_TTL);
+  const isCached =
+    subredditCache[cacheKey] &&
+    now - subredditCache[cacheKey].timestamp < CACHE_TTL;
 
+  let posts;
   if (isCached) {
     posts = subredditCache[cacheKey].posts;
   } else {
     const limit = chosenMethod === 'top' ? 100 : 50;
-    if (chosenMethod === 'top') {
-      posts = await reddit.getSubreddit(sub).getTop({ time, limit });
-    } else {
-      posts = await reddit.getSubreddit(sub)[`get${capitalize(chosenMethod)}`]({ limit });
-    }
+    const subreddit = reddit.getSubreddit(sub);
+    posts =
+      chosenMethod === 'top'
+        ? await subreddit.getTop({ time, limit })
+        : await subreddit[`get${capitalize(chosenMethod)}`]({ limit });
 
-    subredditCache[cacheKey] = {
-      timestamp: now,
-      posts
-    };
+    subredditCache[cacheKey] = { timestamp: now, posts };
   }
 
   // Sélection aléatoire dans la liste
@@ -182,21 +199,17 @@ async function fetchRandomMemeImage() {
 
   if (images.length === 0) return null;
 
-  const random = images[Math.floor(Math.random() * images.length)];
+  const random = randomItem(images);
 
-  // Historique
+  // Historique pour ne pas renvoyer les mêmes images
   sentMemes.add(random.url);
   if (sentMemes.size > MAX_HISTORY) {
     const arr = Array.from(sentMemes);
     sentMemes.clear();
-    arr.slice(arr.length - MAX_HISTORY).forEach(url => sentMemes.add(url));
+    arr.slice(-MAX_HISTORY).forEach(url => sentMemes.add(url));
   }
 
-  return {
-    url: random.url,
-    title: random.title,
-    subreddit: sub
-  };
+  return { url: random.url, title: random.title, subreddit: sub };
 }
 
 // Helper pour capitaliser (nécessaire pour appeler `getHot`, `getNew`, etc.)
@@ -207,6 +220,7 @@ function capitalize(str) {
   // GPT
 client.on('messageCreate', async message => {
 
+  // Quand le bot est mentionné
   if (message.mentions.has(client.user)) {
     const isQuestion = message.content.trim().endsWith("?");
     const authorName = message.author.username;
@@ -226,25 +240,21 @@ client.on('messageCreate', async message => {
     `;
 
     try {
-      const messages = await message.channel.messages.fetch({ limit: 3 });
-      const sortedMessages = Array.from(messages.values()).reverse()
-        .filter(m => !m.author.bot && m.content?.trim().length > 0)
-        .reverse();
+      const fetched = await message.channel.messages.fetch({ limit: 3 });
+      const sortedMessages = [...fetched.values()]
+        .filter(m => !m.author.bot && m.content?.trim())
+        .sort((a, b) => a.createdTimestamp - b.createdTimestamp);
 
       const botId = client.user.id;
-      const chatMessages = sortedMessages
-        .filter(msg => msg.content?.trim().length > 0)
-        .map(msg => {
-          const isBot = msg.author.id === botId;
-          const role = isBot ? "assistant" : "user";
-          const content = isBot
+      const chatMessages = sortedMessages.map(msg => ({
+        role: msg.author.id === botId ? "assistant" : "user",
+        content:
+          msg.author.id === botId
             ? msg.content
-            : `${msg.author.username} : ${msg.content}`;
-          return { role, content };
-        });
+            : `${msg.author.username} : ${msg.content}`,
+      }));
 
       const response = await GPTResponse(systemPrompt, chatMessages);
-
       for (const part of splitMessage(response)) {
         await message.channel.send(part);
       }
@@ -256,9 +266,8 @@ client.on('messageCreate', async message => {
     return;
   }
 
-  // Réponses aléatoires style ratio
-  const rand1 = 0.02;
-  if (Math.random() < rand1) {
+  // Réponses automatiques aléatoires
+  if (Math.random() < 0.02) {
     message.reply("Ta gueule");
     return;
   }
@@ -266,18 +275,19 @@ client.on('messageCreate', async message => {
   const cleanMessage = message.content.toLowerCase().trim().replace(/\s+/g, ' ');
 
   if (triggerSet.has(cleanMessage)) {
-    if (message.author.bot) return;
-    message.reply("Nan toi ta gueule");
+    if (!message.author.bot) {
+      message.reply("Nan toi ta gueule");
+    }
     return;
   }
 
-  const rand2 = 0.01;
-  if (Math.random() < rand2) {
+  if (Math.random() < 0.01) {
     message.reply("Ratio");
     return;
   }
 });
 
+// Gestion des commandes slash
 client.on('interactionCreate', async interaction => {
   if (!interaction.isChatInputCommand()) return;
 
@@ -412,10 +422,9 @@ Dis bien a ce batard`;
   }
 });
 
+// Confirmation dans la console quand le bot est prêt
 client.once('ready', () => {
   console.log('Le retardOmancien est en ligne !');
 });
 
 client.login(DISCORD_TOKEN);
-
-//git add . && git commit -m "e" && git push

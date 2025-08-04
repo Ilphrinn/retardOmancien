@@ -1,5 +1,7 @@
+// Script de déploiement des commandes slash
 const { REST, Routes, SlashCommandBuilder } = require('discord.js');
 
+// Variables d'environnement nécessaires
 const { DISCORD_TOKEN, CLIENT_ID } = process.env;
 
 if (!DISCORD_TOKEN || !CLIENT_ID) {
@@ -7,17 +9,26 @@ if (!DISCORD_TOKEN || !CLIENT_ID) {
   process.exit(1);
 }
 
+// Déclaration des commandes disponibles
 const commands = [
   new SlashCommandBuilder().setName('curse').setDescription('Active Curse of Ra'),
   new SlashCommandBuilder().setName('copiepate').setDescription('Reçoit une copiepasta'),
   new SlashCommandBuilder().setName('meme').setDescription('Reçoit un meme'),
   new SlashCommandBuilder().setName('ascii').setDescription('Envoie un ASCII random'),
-  new SlashCommandBuilder().setName('insulte').setDescription("insulte quelqu'un")
-    .addUserOption(option => option.setName('utilisateur').setDescription("la personne que tu roast").setRequired(true)),
+  new SlashCommandBuilder()
+    .setName('insulte')
+    .setDescription("insulte quelqu'un")
+    .addUserOption(option =>
+      option
+        .setName('utilisateur')
+        .setDescription("la personne que tu roast")
+        .setRequired(true)
+    ),
 ].map(cmd => cmd.toJSON());
 
 const rest = new REST({ version: '10' }).setToken(DISCORD_TOKEN);
 
+// Enregistrement effectif auprès de l'API Discord
 (async () => {
   try {
     console.log('📡 Déploiement des commandes slash...');

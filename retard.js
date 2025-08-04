@@ -397,22 +397,8 @@ Dis bien a ce batard`;
       const filename = `meme${ext}`;
       const file = { attachment: Buffer.from(res.data), name: filename };
 
-      if (meme.type === 'image') {
+      if (meme.type === 'image' || meme.type === 'video') {
         await interaction.channel.send({
-          embeds: [{
-            title: meme.title,
-            image: { url: `attachment://${filename}` },
-            footer: { text: `r/${meme.subreddit}` }
-          }],
-          files: [file]
-        });
-      } else if (meme.type === 'video') {
-        await interaction.channel.send({
-          content: `${meme.title} — r/${meme.subreddit}`,
-          embeds: [{
-            title: meme.title,
-            footer: { text: `r/${meme.subreddit}` }
-          }],
           files: [file]
         });
       } else {

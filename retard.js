@@ -36,7 +36,7 @@ async function acknowledge(interaction) {
 const { DISCORD_TOKEN } = process.env;
 
 const reddit = new Snoowrap({
-  userAgent: 'retardOmancienBot/1.0 by a retard',
+  userAgent: 'RaccoonFetcher/1.0 by Ilphrinn',
   clientId: process.env.REDDIT_CLIENT_ID,
   clientSecret: process.env.REDDIT_CLIENT_SECRET,
   username: process.env.REDDIT_USERNAME,

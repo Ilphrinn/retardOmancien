@@ -302,7 +302,9 @@ client.on('messageCreate', async message => {
 
   // Réponses automatiques aléatoires
   if (Math.random() < 0.02) {
-    message.reply("Ta gueule");
+    if (!message.author.bot) {
+      message.reply("Ta gueule");
+    }
     return;
   }
 
@@ -316,7 +318,9 @@ client.on('messageCreate', async message => {
   }
 
   if (Math.random() < 0.01) {
-    message.reply("Ratio");
+    if (!message.author.bot) {
+      message.reply("Ratio");
+    }
     return;
   }
 });

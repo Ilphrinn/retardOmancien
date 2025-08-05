@@ -154,7 +154,7 @@ const subredditsMemes = [
   'shitposting',
   'okbuddyretard',
   'doodoofard',
-  'DeepFriedMeme',
+  'DeepFriedMemes',
   'greentext',
   'MemeMan',
 ];

@@ -246,6 +246,47 @@ async function fetchRandomMeme() {
   return random;
 }
 
+/**
+ * Récupère un lien Wikipédia pertinent basé sur les derniers messages du salon.
+ * @param {import('discord.js').TextBasedChannel} channel
+ * @param {number} [limit=5] Nombre de messages à analyser
+ * @returns {Promise<string|null>} Lien Wikipédia ou null si aucun résultat
+ */
+async function fetchRelevantWikiLink(channel, limit = 5) {
+  const fetched = await channel.messages.fetch({ limit });
+  const text = [...fetched.values()].map(m => m.content).join(' ');
+  const words = text.toLowerCase().match(/[a-zà-ÿ]+/g);
+  if (!words) return null;
+
+  const frequencies = words.reduce((acc, word) => {
+    acc[word] = (acc[word] || 0) + 1;
+    return acc;
+  }, {});
+
+  const topWords = Object.entries(frequencies)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([w]) => w);
+
+  if (topWords.length === 0) return null;
+  const keyword = randomItem(topWords);
+
+  const { data } = await axios.get('https://fr.wikipedia.org/w/api.php', {
+    params: {
+      action: 'query',
+      list: 'search',
+      srsearch: keyword,
+      format: 'json',
+    },
+  });
+
+  const results = data?.query?.search;
+  if (!results || results.length === 0) return null;
+
+  const page = randomItem(results);
+  return `https://fr.wikipedia.org/wiki/${page.title.replace(/ /g, '_')}`;
+}
+
 // Helper pour capitaliser (nécessaire pour appeler `getHot`, `getNew`, etc.)
 function capitalize(str) {
   return str.charAt(0).toUpperCase() + str.slice(1);
@@ -344,6 +385,16 @@ client.on('interactionCreate', async interaction => {
     await acknowledge(interaction);
     for (const part of parts) {
       await interaction.channel.send(part);
+    }
+  }
+
+  else if (name === 'wiki') {
+    const link = await fetchRelevantWikiLink(interaction.channel);
+    await acknowledge(interaction);
+    if (link) {
+      await interaction.channel.send(link);
+    } else {
+      await interaction.channel.send("Aucun article trouvé.");
     }
   }
 

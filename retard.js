@@ -287,6 +287,28 @@ async function fetchRelevantWikiLink(channel, limit = 5) {
   return `https://fr.wikipedia.org/wiki/${page.title.replace(/ /g, '_')}`;
 }
 
+/**
+ * Récupère le premier lien Wikipédia correspondant à une requête donnée.
+ * @param {string} query Terme recherché
+ * @returns {Promise<string|null>} Lien Wikipédia ou null si aucun résultat
+ */
+async function fetchWikiLinkFromQuery(query) {
+  const { data } = await axios.get('https://fr.wikipedia.org/w/api.php', {
+    params: {
+      action: 'query',
+      list: 'search',
+      srsearch: query,
+      format: 'json',
+    },
+  });
+
+  const results = data?.query?.search;
+  if (!results || results.length === 0) return null;
+
+  const page = results[0];
+  return `https://fr.wikipedia.org/wiki/${page.title.replace(/ /g, '_')}`;
+}
+
 // Helper pour capitaliser (nécessaire pour appeler `getHot`, `getNew`, etc.)
 function capitalize(str) {
   return str.charAt(0).toUpperCase() + str.slice(1);
@@ -389,7 +411,10 @@ client.on('interactionCreate', async interaction => {
   }
 
   else if (name === 'wiki') {
-    const link = await fetchRelevantWikiLink(interaction.channel);
+    const query = interaction.options.getString('recherche');
+    const link = query
+      ? await fetchWikiLinkFromQuery(query)
+      : await fetchRelevantWikiLink(interaction.channel);
     await acknowledge(interaction);
     if (link) {
       await interaction.channel.send(link);

@@ -15,7 +15,15 @@ const commands = [
   new SlashCommandBuilder().setName('copiepate').setDescription('Reçoit une copiepasta'),
   new SlashCommandBuilder().setName('meme').setDescription('Reçoit un meme (image ou vidéo)'),
   new SlashCommandBuilder().setName('ascii').setDescription('Envoie un ASCII random'),
-  new SlashCommandBuilder().setName('wiki').setDescription('Lien Wikipédia lié aux derniers messages'),
+  new SlashCommandBuilder()
+    .setName('wiki')
+    .setDescription('Lien Wikipédia lié aux derniers messages ou à une recherche')
+    .addStringOption(option =>
+      option
+        .setName('recherche')
+        .setDescription('Terme à rechercher sur Wikipédia')
+        .setRequired(false)
+    ),
   new SlashCommandBuilder()
     .setName('insulte')
     .setDescription("insulte quelqu'un")

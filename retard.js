@@ -375,7 +375,11 @@ client.on('messageCreate', async message => {
 
   if (triggerSet.has(cleanMessage)) {
     if (!message.author.bot) {
-      message.reply("Nan toi ta gueule");
+      if (Math.random() < 0.01) {
+        message.reply("ok");
+      } else {
+        message.reply("Nan toi ta gueule");
+      }
     }
     return;
   }

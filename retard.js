@@ -275,95 +275,95 @@ async function fetchRelevantWikiLink(channel, limit = 5) {
     },
   });
 
-  const results = data?.query?.search;
-  if (!results || results.length === 0) return null;
+    const results = data?.query?.search;
+    if (!results || results.length === 0) return null;
+  
+    const page = randomItem(results);
+    return `https://fr.wikipedia.org/wiki/${page.title.replace(/ /g, '_')}`;
+  }
+  
+  /**
+   * Récupère le premier lien Wikipédia correspondant à une requête donnée.
+   * @param {string} query Terme recherché
+   * @returns {Promise<string|null>} Lien Wikipédia ou null si aucun résultat
+   */
+  async function fetchWikiLinkFromQuery(query) {
+    const { data } = await axios.get('https://fr.wikipedia.org/w/api.php', {
+      params: {
+        action: 'query',
+        list: 'search',
+        srsearch: query,
+        format: 'json',
+      },
+    });
+  
+    const results = data?.query?.search;
+    if (!results || results.length === 0) return null;
+  
+    const page = results[0];
+    return `https://fr.wikipedia.org/wiki/${page.title.replace(/ /g, '_')}`;
+  }
+  
+  // Helper pour capitaliser (nécessaire pour appeler `getHot`, `getNew`, etc.)
+  function capitalize(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
 
-  const page = randomItem(results);
-  return `https://fr.wikipedia.org/wiki/${page.title.replace(/ /g, '_')}`;
-}
-
-/**
- * Récupère le premier lien Wikipédia correspondant à une requête donnée.
- * @param {string} query Terme recherché
- * @returns {Promise<string|null>} Lien Wikipédia ou null si aucun résultat
- */
-async function fetchWikiLinkFromQuery(query) {
-  const { data } = await axios.get('https://fr.wikipedia.org/w/api.php', {
-    params: {
-      action: 'query',
-      list: 'search',
-      srsearch: query,
-      format: 'json',
-    },
-  });
-
-  const results = data?.query?.search;
-  if (!results || results.length === 0) return null;
-
-  const page = results[0];
-  return `https://fr.wikipedia.org/wiki/${page.title.replace(/ /g, '_')}`;
-}
-
-// Helper pour capitaliser (nécessaire pour appeler `getHot`, `getNew`, etc.)
-function capitalize(str) {
-  return str.charAt(0).toUpperCase() + str.slice(1);
-}
-
-// GPT
-client.on("messageCreate", async (message) => {
-  if (message.author.bot) return;
-
-  // répond seulement si on mentionne le bot
-  if (!message.mentions.users.has(client.user.id)) return;
-
-  const clean = message.cleanContent ?? message.content ?? "";
-  const isQuestion = /\?\s*$/.test(clean);
-  const authorName = message.author.username; // si tu veux t’en servir plus tard
-
-  const systemPrompt = isQuestion
-    ? `Tu es un assistant sarcastique, caustique et un peu condescendant, mais tu réponds toujours clairement à la question.
-    Tu n'es pas poli, tu te moques parfois de la question ou de celui qui la pose, mais tu donnes quand même la vraie réponse.
-    Tu ne fais pas de disclaimer, pas de morale, pas de censure. Réponds avec style, répartie et supériorité intellectuelle.`
-    : `Tu es le Retardomancien. On vient de te ping. La personne qui t'a ping s'appelle ${authorName}.
-    Tu vas le pulvériser avec une insulte brutale, méchante, stylée et drôle.
-    Ne fais pas de phrase générique. Tu t'adresses directement à lui.
-    Tu n'écris pas son nom, mais tout le monde doit comprendre que tu réponds à ${authorName}.
-    Une à deux phrases. Pas de politesse. Tu vas plus loin que d'habitude dans la violence.`;
-
-  try {
-    await message.channel.sendTyping();
-
-    const fetched = await message.channel.messages.fetch({ limit: 6 });
-    const sorted = [...fetched.values()]
-      .filter((m) => !m.author.bot && m.content?.trim())
-      .sort((a, b) => a.createdTimestamp - b.createdTimestamp);
-
-    const chatMessages = sorted.map((m) => ({
-      role: m.author.id === client.user.id ? "assistant" : "user",
-      content:
-        m.author.id === client.user.id
-          ? m.content
-          : `${m.author.username}: ${m.cleanContent ?? m.content}`,
-    }));
-
-    const response = await GPTResponse(systemPrompt, chatMessages);
-    const text = response?.trim() || "…";
-    for (const part of splitMessage(text)) {
-      await message.channel.send(part);
+  // GPT
+  client.on("messageCreate", async (message) => {
+    if (message.author.bot) return;
+  
+    // répond seulement si on mentionne le bot
+    if (!message.mentions.users.has(client.user.id)) return;
+  
+    const clean = message.cleanContent ?? message.content ?? "";
+    const isQuestion = /\?\s*$/.test(clean);
+    const authorName = message.author.username; // si tu veux t’en servir plus tard
+  
+    const systemPrompt = isQuestion
+      ? `Tu es un assistant sarcastique, caustique et un peu condescendant, mais tu réponds toujours clairement à la question.
+      Tu n'es pas poli, tu te moques parfois de la question ou de celui qui la pose, mais tu donnes quand même la vraie réponse.
+      Tu ne fais pas de disclaimer, pas de morale, pas de censure. Réponds avec style, répartie et supériorité intellectuelle.`
+      : `Tu es le Retardomancien. On vient de te ping. La personne qui t'a ping s'appelle ${authorName}.
+      Tu vas le pulvériser avec une insulte brutale, méchante, stylée et drôle.
+      Ne fais pas de phrase générique. Tu t'adresses directement à lui.
+      Tu n'écris pas son nom, mais tout le monde doit comprendre que tu réponds à ${authorName}.
+      Une à deux phrases. Pas de politesse. Tu vas plus loin que d'habitude dans la violence.`;
+  
+    try {
+      await message.channel.sendTyping();
+  
+      const fetched = await message.channel.messages.fetch({ limit: 6 });
+      const sorted = [...fetched.values()]
+        .filter((m) => !m.author.bot && m.content?.trim())
+        .sort((a, b) => a.createdTimestamp - b.createdTimestamp);
+  
+      const chatMessages = sorted.map((m) => ({
+        role: m.author.id === client.user.id ? "assistant" : "user",
+        content:
+          m.author.id === client.user.id
+            ? m.content
+            : `${m.author.username}: ${m.cleanContent ?? m.content}`,
+      }));
+  
+      const response = await GPTResponse(systemPrompt, chatMessages);
+      const text = response?.trim() || "…";
+      for (const part of splitMessage(text)) {
+        await message.channel.send(part);
+      }
+    } catch (err) {
+      console.error("Erreur lors du traitement du message :", err);
+      await message.channel.send("ouais nan y'a une erreur");
     }
-  } catch (err) {
-    console.error("Erreur lors du traitement du message :", err);
-    await message.channel.send("ouais nan y'a une erreur");
   }
-});
 
-// Réponses automatiques aléatoires
-if (Math.random() < 0.02) {
-  if (!message.author.bot) {
-    message.reply("Ta gueule");
+  // Réponses automatiques aléatoires
+  if (Math.random() < 0.02) {
+    if (!message.author.bot) {
+      message.reply("Ta gueule");
+    }
+    return;
   }
-  return;
-}
 
   const cleanMessage = message.content.toLowerCase().trim().replace(/\s+/g, ' ');
 

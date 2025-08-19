@@ -69,20 +69,17 @@ const openai = new OpenAI({
 
 // Interroge l’API d’OpenAI et renvoie la réponse du modèle
 async function GPTResponse(systemPrompt, chatMessages) {
-  const response = await openai.chat.completions.create({
-    model: "gpt-5",
-    max_completion_tokens: 500,
+  const resp = await openai.chat.completions.create({
+    model: "gpt-5",             // ou "gpt-5-mini" / "gpt-5-chat-latest"
+    max_tokens: 500,            // <-- bon paramètre pour Chat Completions
     messages: [
       { role: "system", content: systemPrompt },
       ...chatMessages,
-      {
-        role: "user",
-        content: "Quelqu’un t’a ping : réponds",
-      },
+      { role: "user", content: "Quelqu’un t’a ping : réponds" },
     ],
   });
 
-  return response.choices[0].message.content.trim();
+  return resp.choices[0]?.message?.content ?? "";
 }
 
 // Copiepate (texte, NSFW inclus)

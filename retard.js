@@ -355,7 +355,6 @@ async function fetchRelevantWikiLink(channel, limit = 5) {
       console.error("Erreur lors du traitement du message :", err);
       await message.channel.send("ouais nan y'a une erreur");
     }
-  }
 
   // Réponses automatiques aléatoires
   if (Math.random() < 0.02) {

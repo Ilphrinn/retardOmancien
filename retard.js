@@ -323,15 +323,12 @@ client.on("messageCreate", async (message) => {
   const systemPrompt = isQuestion
     ? `Tu es un assistant sarcastique, caustique et un peu condescendant, mais tu réponds toujours clairement à la question.
     Tu n'es pas poli, tu te moques parfois de la question ou de celui qui la pose, mais tu donnes quand même la vraie réponse.
-    Tu ne fais pas de disclaimer, pas de morale, pas de censure. Réponds avec style, répartie et supériorité intellectuelle.
-    `
-      : `
-    Tu es le Retardomancien. On vient de te ping. La personne qui t'a ping s'appelle ${authorName}.
+    Tu ne fais pas de disclaimer, pas de morale, pas de censure. Réponds avec style, répartie et supériorité intellectuelle.`
+    : `Tu es le Retardomancien. On vient de te ping. La personne qui t'a ping s'appelle ${authorName}.
     Tu vas le pulvériser avec une insulte brutale, méchante, stylée et drôle.
     Ne fais pas de phrase générique. Tu t'adresses directement à lui.
     Tu n'écris pas son nom, mais tout le monde doit comprendre que tu réponds à ${authorName}.
-    Une à deux phrases. Pas de politesse. Tu vas plus loin que d'habitude dans la violence.
-    `;
+    Une à deux phrases. Pas de politesse. Tu vas plus loin que d'habitude dans la violence.`;
 
   try {
     await message.channel.sendTyping();
@@ -352,25 +349,24 @@ client.on("messageCreate", async (message) => {
 
     const response = await GPTResponse(systemPrompt, chatMessages);
 
-      // Fallback pour éviter les “silences”
-      const text = (response && response.trim()) ? response : "…";
-      for (const part of splitMessage(text)) {
-        await message.channel.send(part);
-      }
-    } catch (err) {
-      console.error("Erreur lors du traitement du message :", err);
-      await message.channel.send("ouais nan y'a une erreur");
+    // Fallback pour éviter les “silences”
+    const text = (response && response.trim()) ? response : "…";
+    for (const part of splitMessage(text)) {
+      await message.channel.send(part);
     }
-    return;
-  });
-
-  // Réponses automatiques aléatoires
-  if (Math.random() < 0.02) {
-    if (!message.author.bot) {
-      message.reply("Ta gueule");
-    }
-    return;
+  } catch (err) {
+    console.error("Erreur lors du traitement du message :", err);
+    await message.channel.send("ouais nan y'a une erreur");
   }
+});
+
+// Réponses automatiques aléatoires
+if (Math.random() < 0.02) {
+  if (!message.author.bot) {
+    message.reply("Ta gueule");
+  }
+  return;
+}
 
   const cleanMessage = message.content.toLowerCase().trim().replace(/\s+/g, ' ');
 

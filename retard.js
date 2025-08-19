@@ -72,7 +72,7 @@ async function GPTResponse(systemPrompt, chatMessages) {
   const response = await openai.chat.completions.create({
     model: "gpt-5",
     temperature: 0.9,
-    max_tokens: 500,
+    max_completion_tokens: 500,
     messages: [
       { role: "system", content: systemPrompt },
       ...chatMessages,

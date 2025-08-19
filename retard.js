@@ -313,12 +313,12 @@ function capitalize(str) {
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
 
-  // Détection de mention (fiable en v14)
+  // répond seulement si on mentionne le bot
   if (!message.mentions.users.has(client.user.id)) return;
 
   const clean = message.cleanContent ?? message.content ?? "";
-  const isQuestion = /\?\s*$/.test(clean);              // plus robuste que endsWith("?")
-  const authorName = message.author.username;
+  const isQuestion = /\?\s*$/.test(clean);
+  const authorName = message.author.username; // si tu veux t’en servir plus tard
 
   const systemPrompt = isQuestion
     ? `Tu es un assistant sarcastique, caustique et un peu condescendant, mais tu réponds toujours clairement à la question.
@@ -333,13 +333,12 @@ client.on("messageCreate", async (message) => {
   try {
     await message.channel.sendTyping();
 
-    // Contexte récent (6 msgs), tri chronologique
     const fetched = await message.channel.messages.fetch({ limit: 6 });
     const sorted = [...fetched.values()]
-      .filter(m => m.content?.trim())                   // garde seulement le texte
+      .filter((m) => !m.author.bot && m.content?.trim())
       .sort((a, b) => a.createdTimestamp - b.createdTimestamp);
 
-    const chatMessages = sorted.map(m => ({
+    const chatMessages = sorted.map((m) => ({
       role: m.author.id === client.user.id ? "assistant" : "user",
       content:
         m.author.id === client.user.id
@@ -348,9 +347,7 @@ client.on("messageCreate", async (message) => {
     }));
 
     const response = await GPTResponse(systemPrompt, chatMessages);
-
-    // Fallback pour éviter les “silences”
-    const text = (response && response.trim()) ? response : "…";
+    const text = response?.trim() || "…";
     for (const part of splitMessage(text)) {
       await message.channel.send(part);
     }

@@ -362,7 +362,7 @@ client.on("messageCreate", async (message) => {
       await message.channel.send("ouais nan y'a une erreur");
     }
     return;
-  }
+  });
 
   // Réponses automatiques aléatoires
   if (Math.random() < 0.02) {

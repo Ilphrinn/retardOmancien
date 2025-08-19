@@ -70,7 +70,7 @@ const openai = new OpenAI({
 // Interroge l’API d’OpenAI et renvoie la réponse du modèle
 async function GPTResponse(systemPrompt, chatMessages) {
   const response = await openai.chat.completions.create({
-    model: "gpt-5-chat",
+    model: "gpt-5",
     temperature: 0.9,
     max_tokens: 500,
     messages: [

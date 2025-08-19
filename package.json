@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "retard.js",
   "scripts": {
-    "start": "node slash.js && node retard.js",
+    "start": "node retard.js",
     "slash": "node slash.js"
   },
   "keywords": [],

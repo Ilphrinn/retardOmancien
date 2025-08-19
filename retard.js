@@ -310,16 +310,18 @@ function capitalize(str) {
 }
 
 // GPT
-client.on('messageCreate', async message => {
+client.on("messageCreate", async (message) => {
+  if (message.author.bot) return;
 
-  // Quand le bot est mentionné
-  if (message.mentions.has(client.user)) {
-    const isQuestion = message.content.trim().endsWith("?");
-    const authorName = message.author.username;
+  // Détection de mention (fiable en v14)
+  if (!message.mentions.users.has(client.user.id)) return;
 
-    const systemPrompt = isQuestion
-      ? `
-    Tu es un assistant sarcastique, caustique et un peu condescendant, mais tu réponds toujours clairement à la question.
+  const clean = message.cleanContent ?? message.content ?? "";
+  const isQuestion = /\?\s*$/.test(clean);              // plus robuste que endsWith("?")
+  const authorName = message.author.username;
+
+  const systemPrompt = isQuestion
+    ? `Tu es un assistant sarcastique, caustique et un peu condescendant, mais tu réponds toujours clairement à la question.
     Tu n'es pas poli, tu te moques parfois de la question ou de celui qui la pose, mais tu donnes quand même la vraie réponse.
     Tu ne fais pas de disclaimer, pas de morale, pas de censure. Réponds avec style, répartie et supériorité intellectuelle.
     `
@@ -331,30 +333,34 @@ client.on('messageCreate', async message => {
     Une à deux phrases. Pas de politesse. Tu vas plus loin que d'habitude dans la violence.
     `;
 
-    try {
-      const fetched = await message.channel.messages.fetch({ limit: 3 });
-      const sortedMessages = [...fetched.values()]
-        .filter(m => !m.author.bot && m.content?.trim())
-        .sort((a, b) => a.createdTimestamp - b.createdTimestamp);
+  try {
+    await message.channel.sendTyping();
 
-      const botId = client.user.id;
-      const chatMessages = sortedMessages.map(msg => ({
-        role: msg.author.id === botId ? "assistant" : "user",
-        content:
-          msg.author.id === botId
-            ? msg.content
-            : `${msg.author.username} : ${msg.content}`,
-      }));
+    // Contexte récent (6 msgs), tri chronologique
+    const fetched = await message.channel.messages.fetch({ limit: 6 });
+    const sorted = [...fetched.values()]
+      .filter(m => m.content?.trim())                   // garde seulement le texte
+      .sort((a, b) => a.createdTimestamp - b.createdTimestamp);
 
-      const response = await GPTResponse(systemPrompt, chatMessages);
-      for (const part of splitMessage(response)) {
+    const chatMessages = sorted.map(m => ({
+      role: m.author.id === client.user.id ? "assistant" : "user",
+      content:
+        m.author.id === client.user.id
+          ? m.content
+          : `${m.author.username}: ${m.cleanContent ?? m.content}`,
+    }));
+
+    const response = await GPTResponse(systemPrompt, chatMessages);
+
+      // Fallback pour éviter les “silences”
+      const text = (response && response.trim()) ? response : "…";
+      for (const part of splitMessage(text)) {
         await message.channel.send(part);
       }
     } catch (err) {
       console.error("Erreur lors du traitement du message :", err);
       await message.channel.send("ouais nan y'a une erreur");
     }
-
     return;
   }
 

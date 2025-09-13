@@ -1,4 +1,4 @@
-const { splitMessage, randomItem, createTimedCache } = require('./utils');
+const { splitMessage, randomItem, createTimedCache } = require('../utils');
 const { getTop, TOP_TIMES } = require('../services/reddit');
 
 const CACHE_TTL = 5 * 60 * 1000;

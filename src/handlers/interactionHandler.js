@@ -1,4 +1,4 @@
-const { acknowledge } = require('./utils');
+const { acknowledge } = require('../utils');
 
 module.exports = function buildInteractionHandler(commandsMap) {
   return async function onInteraction(interaction) {

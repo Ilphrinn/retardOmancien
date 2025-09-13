@@ -1,6 +1,6 @@
 const axios = require('axios');
 const path = require('path');
-const { randomItem, createTimedCache } = require('./utils');
+const { randomItem, createTimedCache } = require('../utils');
 const { MEME_METHODS, TOP_TIMES, subredditsMemes } = require('../config');
 const { getTop, getHot, getNew, getRising } = require('./reddit');
 

@@ -1,5 +1,5 @@
 const { fetchRandomAscii } = require('../services/ascii');
-const { splitMessage } = require('./utils');
+const { splitMessage } = require('../utils');
 
 module.exports = {
   name: 'ascii',

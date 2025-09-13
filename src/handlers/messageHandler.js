@@ -1,5 +1,5 @@
 const { GPTResponse } = require('../services/openai');
-const { splitMessage } = require('./utils');
+const { splitMessage } = require('../utils');
 
 module.exports = function buildMessageHandler(client, triggerSet) {
   return async function onMessage(message) {

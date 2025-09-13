@@ -1,4 +1,4 @@
-const { fetchRandomMeme, downloadToDiscordAttachment } = require('../services/memes');
+const { fetchRandomMeme, downloadToDiscordAttachment } = require('../services/meme');
 
 module.exports = {
   name: 'meme',

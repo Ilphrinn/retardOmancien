@@ -3,8 +3,8 @@ const { intents, triggers } = require('./src/config.js');
 
 const client = new Client({ intents });
 
-const buildMessageHandler = require('./handlers/messageHandler');
-const buildInteractionHandler = require('./handlers/interactionHandler');
+const buildMessageHandler = require('./src/handlers/messageHandler');
+const buildInteractionHandler = require('./src/handlers/interactionHandler');
 
 // charge automatiquement les commandes du dossier
 const fs = require('fs');

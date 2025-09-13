@@ -1,4 +1,3 @@
-require('dotenv').config();
 const { Client } = require('discord.js');
 const { intents, triggers } = require('./config');
 

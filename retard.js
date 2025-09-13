@@ -1,5 +1,5 @@
 const { Client } = require('discord.js');
-const { intents, triggers } = require('./config');
+const { intents, triggers } = require('./src/config.js');
 
 const client = new Client({ intents });
 

@@ -1,11 +1,18 @@
 const { GPTResponse } = require('../services/openai');
 const { splitMessage } = require('../utils');
+const clanker = require('../commands/clanker');
 
 module.exports = function buildMessageHandler(client, triggerSet) {
   return async function onMessage(message) {
     if (message.author.bot) return;
 
     if (Math.random() < 0.02) { message.reply("Ta gueule"); return; }
+
+    const lower = message.content.toLowerCase();
+    if (lower.includes('clanker')) {
+      await clanker(message);
+      return;
+    }
 
     const cleanMessage = message.content.toLowerCase().trim().replace(/\s+/g, ' ');
     if (triggerSet.has(cleanMessage)) {

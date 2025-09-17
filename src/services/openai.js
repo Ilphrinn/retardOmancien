@@ -13,8 +13,8 @@ const MODELS_TO_TRY = (() => {
   const candidates = [
     process.env.OPENAI_MODEL,
     process.env.OPENAI_FALLBACK_MODEL,
-    'gpt-4.1-mini',
-    'gpt-4o-mini',
+    'gpt-5',
+    'gpt-4',
   ]
     .map((value) => (typeof value === 'string' ? value.trim() : ''))
     .filter(Boolean);

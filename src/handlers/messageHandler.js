@@ -50,10 +50,20 @@ module.exports = function buildMessageHandler(client, triggerSet) {
 
       const response = await GPTResponse(systemPrompt, chatMessages);
       const text = response?.trim() || "Désolé mec j'ai vendu mon cerveau a la Triade Chinoise et je ne sais plus comment formuler une phrase de réponse :(((((";
-      for (const part of splitMessage(text)) await message.channel.send(part);
+      const parts = splitMessage(text);
+      const allowedMentions = { repliedUser: false };
+
+      for (const part of parts) {
+        // reply pour référencer explicitement le message qui a ping le bot
+        // on désactive le ping automatique de l'auteur
+        await message.reply({ content: part, allowedMentions });
+      }
     } catch (err) {
       console.error("Erreur lors du traitement du message :", err);
-      await message.channel.send("ouais nan y'a une erreur");
+      await message.reply({
+        content: "ouais nan y'a une erreur",
+        allowedMentions: { repliedUser: false }
+      });
     }
   };
 };

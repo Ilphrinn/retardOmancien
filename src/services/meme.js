@@ -5,8 +5,10 @@ const { MEME_METHODS, TOP_TIMES, subredditsMemes } = require('../config');
 const { getTop, getHot, getNew, getRising } = require('./reddit');
 
 const subredditCache = createTimedCache(5 * 60 * 1000);
+const redditVideoDownloadCache = createTimedCache(30 * 60 * 1000);
 const sentMemes = new Set();
 const MAX_HISTORY = 200;
+const NO_REDDIT_SAVE_RESULT = Symbol('no_reddit_save');
 
 async function fetchFromReddit(sub, method, time) {
   if (method === 'top') return getTop(sub, time, 100);
@@ -14,6 +16,45 @@ async function fetchFromReddit(sub, method, time) {
   if (method === 'new') return getNew(sub, 50);
   if (method === 'rising') return getRising(sub, 50);
   return getHot(sub, 50);
+}
+
+async function resolveRedditVideoDownload(permalink) {
+  if (!permalink) return null;
+  const cacheKey = permalink;
+  const cached = redditVideoDownloadCache.get(cacheKey);
+  if (cached) {
+    if (cached === NO_REDDIT_SAVE_RESULT) return null;
+    return cached;
+  }
+
+  const infoUrl = `https://redditsave.com/info?url=${encodeURIComponent(permalink)}`;
+
+  try {
+    const res = await axios.get(infoUrl, {
+      headers: { 'User-Agent': 'Mozilla/5.0' }
+    });
+
+    let data = res.data;
+    if (typeof data === 'string') {
+      try {
+        data = JSON.parse(data);
+      } catch (err) {
+        console.warn('Impossible de parser la réponse de redditsave :', err?.message || err);
+        data = null;
+      }
+    }
+
+    if (data && typeof data === 'object') {
+      const downloadUrl = data.download_hd || data.download_url || null;
+      redditVideoDownloadCache.set(cacheKey, downloadUrl || NO_REDDIT_SAVE_RESULT);
+      return downloadUrl;
+    }
+  } catch (err) {
+    console.warn('Echec de récupération du téléchargement reddit avec son :', err?.message || err);
+  }
+
+  redditVideoDownloadCache.set(cacheKey, NO_REDDIT_SAVE_RESULT);
+  return null;
 }
 
 async function fetchRandomMeme() {
@@ -45,6 +86,9 @@ async function fetchRandomMeme() {
 
     if (post.is_video && post.media?.reddit_video?.fallback_url) {
       const downloadUrl = post.media.reddit_video.fallback_url;
+      const permalink = post.permalink
+        ? `https://www.reddit.com${post.permalink}`
+        : (url.includes('reddit.com') ? url : null);
       const pageUrl = url || (post.permalink ? `https://www.reddit.com${post.permalink}` : downloadUrl);
       return {
         type: 'reddit_video',
@@ -97,6 +141,12 @@ async function fetchRandomMeme() {
 
   const random = randomItem(medias);
   const identifier = random.cacheKey || random.url;
+  if (random.type === 'reddit_video' && random.permalink) {
+    const enhancedDownload = await resolveRedditVideoDownload(random.permalink);
+    if (enhancedDownload) {
+      random.downloadUrl = enhancedDownload;
+    }
+  }
   sentMemes.add(identifier);
   if (sentMemes.size > MAX_HISTORY) {
     const arr = Array.from(sentMemes);
@@ -106,14 +156,19 @@ async function fetchRandomMeme() {
   return random;
 }
 
-async function downloadToDiscordAttachment(url, type) {
-  const res = await axios.get(url, {
+async function downloadToDiscordAttachment(meme) {
+  const { downloadUrl, type } = meme;
+  if (!downloadUrl) {
+    throw new Error('Aucune URL téléchargeable disponible pour ce meme');
+  }
+
+  const res = await axios.get(downloadUrl, {
     responseType: 'arraybuffer',
     headers: { 'User-Agent': 'Mozilla/5.0', 'Referer': 'https://www.reddit.com' }
   });
-  const urlPath = new URL(url).pathname;
+  const urlPath = new URL(downloadUrl).pathname;
   let ext = path.extname(urlPath);
-  if (!ext) ext = type === 'video' ? '.mp4' : '.png';
+  if (!ext) ext = type === 'video' || type === 'reddit_video' ? '.mp4' : '.png';
   const filename = `meme${ext}`;
   return { attachment: Buffer.from(res.data), name: filename };
 }

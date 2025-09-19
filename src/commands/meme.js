@@ -3,14 +3,20 @@ const { fetchRandomMeme, downloadToDiscordAttachment } = require('../services/me
 module.exports = {
   name: 'meme',
   async execute(interaction) {
-    const meme = await fetchRandomMeme();
+    let meme = null;
+    const maxAttempts = 5;
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      meme = await fetchRandomMeme();
+      if (meme) break;
+    }
+
     if (!meme) {
-      await interaction.channel.send("https://tenor.com/view/kirby-i-forgot-i-forgor-gif-22449575");
+      await interaction.channel.send("Impossible de trouver un meme pour le moment, réessaie dans quelques secondes.");
       return;
     }
     try {
-      const file = await downloadToDiscordAttachment(meme.url, meme.type);
-      if (meme.type === 'image' || meme.type === 'video') {
+      if (meme.downloadUrl) {
+        const file = await downloadToDiscordAttachment(meme.downloadUrl, meme.type);
         await interaction.channel.send({ files: [file] });
       } else {
         await interaction.channel.send(meme.url);

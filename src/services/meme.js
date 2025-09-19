@@ -28,28 +28,76 @@ async function fetchRandomMeme() {
     subredditCache.set(cacheKey, posts);
   }
 
+  const postsArray = Array.isArray(posts)
+    ? posts
+    : (typeof posts?.slice === 'function' ? posts.slice(0) : []);
+
+  if (!postsArray || postsArray.length === 0) {
+    return null;
+  }
+
   const offsetStep = 10;
-  const offset = Math.floor(Math.random() * Math.max(1, posts.length / offsetStep)) * offsetStep;
-  const slice = posts.slice(offset, offset + offsetStep);
+  const offset = Math.floor(Math.random() * Math.max(1, postsArray.length / offsetStep)) * offsetStep;
+  const slice = postsArray.slice(offset, offset + offsetStep);
 
   const medias = slice.map(post => {
     const url = post.url || '';
+
     if (post.is_video && post.media?.reddit_video?.fallback_url) {
-      return { type: 'video', url: post.media.reddit_video.fallback_url, title: post.title, subreddit: sub };
+      const downloadUrl = post.media.reddit_video.fallback_url;
+      const pageUrl = url || (post.permalink ? `https://www.reddit.com${post.permalink}` : downloadUrl);
+      return {
+        type: 'reddit_video',
+        url: pageUrl,
+        downloadUrl: null,
+        cacheKey: downloadUrl,
+        title: post.title,
+        subreddit: sub
+      };
     }
+
     if (/\.gifv$/.test(url)) {
-      return { type: 'video', url: url.replace(/\.gifv$/, '.mp4'), title: post.title, subreddit: sub };
+      const convertedUrl = url.replace(/\.gifv$/, '.mp4');
+      return {
+        type: 'video',
+        url: convertedUrl,
+        downloadUrl: convertedUrl,
+        cacheKey: convertedUrl,
+        title: post.title,
+        subreddit: sub
+      };
     }
+
+    if (/\.(mp4)$/.test(url)) {
+      return {
+        type: 'video',
+        url,
+        downloadUrl: url,
+        cacheKey: url,
+        title: post.title,
+        subreddit: sub
+      };
+    }
+
     if (/\.(jpg|jpeg|png|gif)$/.test(url)) {
-      return { type: 'image', url, title: post.title, subreddit: sub };
+      return {
+        type: 'image',
+        url,
+        downloadUrl: url,
+        cacheKey: url,
+        title: post.title,
+        subreddit: sub
+      };
     }
+
     return null;
-  }).filter(Boolean).filter(m => !sentMemes.has(m.url));
+  }).filter(Boolean).filter(m => !sentMemes.has(m.cacheKey || m.url));
 
   if (medias.length === 0) return null;
 
   const random = randomItem(medias);
-  sentMemes.add(random.url);
+  const identifier = random.cacheKey || random.url;
+  sentMemes.add(identifier);
   if (sentMemes.size > MAX_HISTORY) {
     const arr = Array.from(sentMemes);
     sentMemes.clear();

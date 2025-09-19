@@ -89,15 +89,14 @@ async function fetchRandomMeme() {
       const permalink = post.permalink
         ? `https://www.reddit.com${post.permalink}`
         : (url.includes('reddit.com') ? url : null);
-      const pageUrl = permalink || url || downloadUrl;
+      const pageUrl = url || (post.permalink ? `https://www.reddit.com${post.permalink}` : downloadUrl);
       return {
         type: 'reddit_video',
         url: pageUrl,
-        downloadUrl,
+        downloadUrl: null,
         cacheKey: downloadUrl,
         title: post.title,
-        subreddit: sub,
-        permalink
+        subreddit: sub
       };
     }
 

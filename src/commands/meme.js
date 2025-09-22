@@ -16,9 +16,7 @@ module.exports = {
     }
     try {
       if (meme.downloadUrl) {
-        
-        const file = await downloadToDiscordAttachment(meme.downloadUrl, meme.type);
-
+        const file = await downloadToDiscordAttachment(meme);
         await interaction.channel.send({ files: [file] });
       } else {
         await interaction.channel.send(meme.url);

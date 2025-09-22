@@ -85,18 +85,19 @@ async function fetchRandomMeme() {
     const url = post.url || '';
 
     if (post.is_video && post.media?.reddit_video?.fallback_url) {
-      const downloadUrl = post.media.reddit_video.fallback_url;
+      const fallbackUrl = post.media.reddit_video.fallback_url;
       const permalink = post.permalink
         ? `https://www.reddit.com${post.permalink}`
         : (url.includes('reddit.com') ? url : null);
-      const pageUrl = url || (post.permalink ? `https://www.reddit.com${post.permalink}` : downloadUrl);
+      const pageUrl = url || (post.permalink ? `https://www.reddit.com${post.permalink}` : fallbackUrl);
       return {
         type: 'reddit_video',
         url: pageUrl,
-        downloadUrl: null,
-        cacheKey: downloadUrl,
+        downloadUrl: fallbackUrl,
+        cacheKey: fallbackUrl,
         title: post.title,
-        subreddit: sub
+        subreddit: sub,
+        permalink
       };
     }
 

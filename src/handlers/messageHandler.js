@@ -6,7 +6,7 @@ module.exports = function buildMessageHandler(client, triggerSet) {
   return async function onMessage(message) {
     if (message.author.bot) return;
 
-    if (Math.random() < 0.02) { message.reply("Ta gueule"); return; }
+    if (Math.random() < 0.015) { message.reply("Ta gueule"); return; }
 
     const lower = message.content.toLowerCase();
     if (lower.includes('clanker')) {

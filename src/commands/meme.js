@@ -11,7 +11,7 @@ module.exports = {
     }
 
     if (!meme) {
-      await interaction.channel.send("Impossible de trouver un meme pour le moment, réessaie dans quelques secondes.");
+      await interaction.channel.send("I forgor");
       return;
     }
     try {
@@ -22,7 +22,7 @@ module.exports = {
         await interaction.channel.send(meme.url);
       }
     } catch (err) {
-      console.error('Erreur lors du téléchargement du meme :', err);
+      console.error('me stoopid', err);
       await interaction.channel.send(meme.url);
     }
   }

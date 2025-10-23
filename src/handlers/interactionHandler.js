@@ -10,7 +10,7 @@ module.exports = function buildInteractionHandler(commandsMap) {
       await cmd.execute(interaction);
     } catch (err) {
       console.error(`Erreur commande /${interaction.commandName}:`, err);
-      try { await interaction.channel.send("ouais nan y'a une erreur"); } catch(_){}
+      try { await interaction.channel.send("me stoopid"); } catch(_){}
     }
   };
 };

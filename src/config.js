@@ -16,6 +16,6 @@ module.exports = {
   MEME_METHODS: ['hot', 'new', 'rising', 'top'],
   subredditsMemes: [
     'Discordmemes','shitposting','okbuddyretard','doodoofard',
-    'DeepFriedMemes','MemeMan', 'cursedcomments', 'pissretard'
+    'DeepFriedMemes','MemeMan', 'cursedcomments'
   ]
 };

@@ -43,7 +43,7 @@ module.exports = function buildMessageHandler(client, triggerSet) {
     } catch (err) {
       console.error("Erreur lors du traitement du message :", err);
       await message.reply({
-        content: "ouais nan y'a une erreur",
+        content: "📡📡📡📡📡📡📡📡📡📡📡📡📡📡📡",
         allowedMentions: { repliedUser: false }
       });
     }

@@ -15,7 +15,7 @@ module.exports = function buildMessageHandler(client, triggerSet) {
 
     const cleanMessage = message.content.toLowerCase().trim().replace(/\s+/g, ' ');
     if (triggerSet.has(cleanMessage)) {
-      if (Math.random() < 0.01) message.reply("ok");
+      if (Math.random() < 0.2) message.reply("ok");
       else message.reply("Nan toi ta gueule");
       return;
     }

@@ -13,7 +13,7 @@ module.exports = {
       for (const part of splitMessage(random, 2000)) await interaction.channel.send(part);
     } catch (err) {
       console.error("Erreur Puppeteer ASCII :", err.message);
-      await interaction.channel.send("Erreur lors du chargement de l'ASCII.");
+      await interaction.channel.send("gneEEEEEEUUUUUUUUUUUUU :(((((((");
     }
   }
 };

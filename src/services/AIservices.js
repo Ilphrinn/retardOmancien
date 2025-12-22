@@ -1,5 +1,5 @@
 const axios = require('axios');
-const { logger } = require('../utils/utils');
+const { logger } = require('../utils');
 
 /**
  * ============================================

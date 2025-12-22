@@ -29,25 +29,7 @@ module.exports = {
 
             // Si mention vide
             if (!content) {
-                await message.reply('👋 Salut ! Pose-moi une question après m\'avoir mentionné !');
-                return;
-            }
-
-            // Commandes spéciales
-            if (['reset', 'clear', 'effacer'].includes(content.toLowerCase())) {
-                AIservices.clearHistory(userId);
-                logger.info(`🔄 Historique réinitialisé pour ${userTag}`);
-                await message.reply('🔄 **Historique effacé !** On repart de zéro.');
-                return;
-            }
-
-            if (['aide', 'help', '?'].includes(content.toLowerCase())) {
-                await message.reply(
-                    '**🤖 Comment m\'utiliser :**\n' +
-                    '• Mentionne-moi + ta question\n' +
-                    '• Je garde l\'historique de nos conversations\n' +
-                    '• Commandes : `reset`, `aide`'
-                );
+                await message.reply('yo');
                 return;
             }
 

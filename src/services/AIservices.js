@@ -13,7 +13,7 @@ class MammouthService {
     constructor() {
         this.apiKey = process.env.MAMMOUTH_API_KEY;
         this.apiUrl = 'https://api.mammouth.ai/v1/chat/completions';
-        this.model = process.env.MAMMOUTH_MODEL || 'grok-beta';
+        this.model = process.env.MAMMOUTH_MODEL;
         this.conversationHistory = new Map();
         
         logger.info('🤖 Service Mammouth.ai initialisé');
@@ -77,14 +77,14 @@ class MammouthService {
 
             // Gestion des erreurs spécifiques
             if (error.response?.status === 401) {
-                return '🔑 Erreur d\'authentification avec l\'API.';
+                return 'j\'arrive pas a faire le lien entre ce que tu dis et mon cerveau la';
             } else if (error.response?.status === 429) {
-                return '⏱️ Trop de requêtes, réessaye dans quelques secondes.';
+                return 'Ferme ta gueule deux secondes ??? Merci mec';
             } else if (error.code === 'ECONNABORTED') {
-                return '⏱️ L\'IA met trop de temps à répondre, réessaye.';
+                return 'Tu me casse les couilles laisse moi réfléchir la';
             }
 
-            return '❌ Une erreur s\'est produite. Réessaye plus tard.';
+            return 'e';
         }
     }
 

@@ -1,5 +1,4 @@
 const axios = require('axios');
-const logger = require('../utils/logger');
 
 class MammouthService {
     constructor() {
@@ -9,17 +8,10 @@ class MammouthService {
         this.conversationHistory = new Map();
     }
 
-    /**
-     * Obtenir une réponse de l'API Mammouth.ai
-     * @param {string} userId - L'ID de l'utilisateur
-     * @param {string} userMessage - Le message de l'utilisateur
-     * @param {Object} options - Options supplémentaires
-     * @returns {Promise<string>} - La réponse générée
-     */
     async getResponse(userId, userMessage, options = {}) {
         try {
             if (!this.apiKey) {
-                logger.error('Clé API Mammouth.ai non configurée');
+                console.error('[ERROR] Clé API Mammouth.ai non configurée');
                 return 'Configuration manquante pour Mammouth.ai';
             }
 
@@ -43,105 +35,80 @@ class MammouthService {
                 }
             );
 
-            const assistantMessage = response.data.choices[0].message.content;
-            
-            // Sauvegarder dans l'historique
-            this._addToHistory(userId, 'assistant', assistantMessage);
-
-            logger.info(`Réponse Mammouth générée pour l'utilisateur ${userId}`);
-            return assistantMessage;
-
-        } catch (error) {
-            logger.error('Erreur API Mammouth:', {
-                message: error.message,
-                response: error.response?.data,
-                status: error.response?.status
-            });
-
-            if (error.response?.status === 401) {
-                return 'Erreur d\'authentification avec Mammouth.ai';
-            } else if (error.response?.status === 429) {
-                return 'Limite de requêtes atteinte, veuillez réessayer plus tard';
+            if (response.data?.choices?.[0]?.message?.content) {
+                const aiResponse = response.data.choices[0].message.content;
+                this._addToHistory(userId, 'user', userMessage);
+                this._addToHistory(userId, 'assistant', aiResponse);
+                
+                console.log(`[INFO] Réponse Mammouth générée pour l'utilisateur ${userId}`);
+                return aiResponse;
+            } else {
+                throw new Error('Réponse invalide de l\'API Mammouth.ai');
             }
 
-            return 'Désolé, je n\'ai pas pu traiter votre demande';
+        } catch (error) {
+            console.error('[ERROR] Erreur Mammouth.ai:', error.message);
+            
+            if (error.response) {
+                console.error('[ERROR] Status:', error.response.status);
+                console.error('[ERROR] Data:', error.response.data);
+            }
+
+            if (error.response?.status === 401) {
+                return '🔑 Erreur d\'authentification avec l\'API. Vérifie la clé API.';
+            } else if (error.response?.status === 429) {
+                return '⏳ Trop de requêtes. Réessaye dans quelques instants.';
+            } else if (error.code === 'ECONNABORTED') {
+                return '⏱️ La requête a pris trop de temps. Réessaye.';
+            }
+            
+            return '❌ Impossible d\'obtenir une réponse pour le moment.';
         }
     }
 
-    /**
-     * Construire le tableau de messages pour l'API
-     * @private
-     */
     _buildMessages(userId, userMessage, options) {
-        // Initialiser l'historique si nécessaire
-        if (!this.conversationHistory.has(userId)) {
-            this.conversationHistory.set(userId, []);
+        const messages = [];
+        
+        if (options.systemPrompt) {
+            messages.push({
+                role: 'system',
+                content: options.systemPrompt
+            });
         }
 
-        const history = this.conversationHistory.get(userId);
-
-        // Message système
-        const systemMessage = {
-            role: 'system',
-            content: options.systemPrompt || 'Tu es un assistant Discord serviable et amical. Tu réponds de manière concise et pertinente.'
-        };
-
-        // Ajouter le message utilisateur à l'historique
-        this._addToHistory(userId, 'user', userMessage);
-
-        // Construire le tableau complet
-        const messages = [systemMessage, ...history];
-
-        // Limiter à 20 messages maximum (10 échanges)
-        if (messages.length > 21) {
-            return [systemMessage, ...history.slice(-20)];
-        }
+        const history = this.conversationHistory.get(userId) || [];
+        messages.push(...history);
+        
+        messages.push({
+            role: 'user',
+            content: userMessage
+        });
 
         return messages;
     }
 
-    /**
-     * Ajouter un message à l'historique
-     * @private
-     */
     _addToHistory(userId, role, content) {
         if (!this.conversationHistory.has(userId)) {
             this.conversationHistory.set(userId, []);
         }
-
+        
         const history = this.conversationHistory.get(userId);
         history.push({ role, content });
-
-        // Limiter la taille de l'historique
-        if (history.length > 20) {
-            history.splice(0, history.length - 20);
+        
+        const maxHistoryLength = 20;
+        if (history.length > maxHistoryLength) {
+            this.conversationHistory.set(userId, history.slice(-maxHistoryLength));
         }
     }
 
-    /**
-     * Réinitialiser l'historique d'un utilisateur
-     * @param {string} userId - L'ID de l'utilisateur
-     */
     clearHistory(userId) {
         this.conversationHistory.delete(userId);
-        logger.info(`Historique effacé pour l'utilisateur ${userId}`);
+        console.log(`[INFO] Historique effacé pour l'utilisateur ${userId}`);
     }
 
-    /**
-     * Réinitialiser tous les historiques (nettoyage)
-     */
-    clearAllHistories() {
-        const count = this.conversationHistory.size;
+    clearAllHistory() {
         this.conversationHistory.clear();
-        logger.info(`${count} historiques effacés`);
-    }
-
-    /**
-     * Nettoyer les historiques anciens (plus de 1 heure d'inactivité)
-     */
-    cleanupOldHistories() {
-        // À implémenter si besoin avec des timestamps
-        logger.info('Nettoyage des anciens historiques');
+        console.log('[INFO] Tous les historiques ont été effacés');
     }
 }
 

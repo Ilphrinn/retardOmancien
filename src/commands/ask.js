@@ -1,75 +1,86 @@
-const { SlashCommandBuilder } = require('discord.js');
 const AIservices = require('../services/AIservices');
-const logger = require('../utils/logger');
+const { logger, splitMessage } = require('../utils/utils');
+
+/**
+ * ============================================
+ * EVENT : RÉPONSE AUX MENTIONS
+ * ============================================
+ * Le bot répond uniquement quand il est mentionné
+ */
 
 module.exports = {
-    data: new SlashCommandBuilder()
-        .setName('ask')
-        .setDescription('Poser une question à l\'IA (Grok via Mammouth.ai)')
-        .addStringOption(option =>
-            option.setName('question')
-                .setDescription('Votre question')
-                .setRequired(true)
-        )
-        .addBooleanOption(option =>
-            option.setName('reset')
-                .setDescription('Réinitialiser l\'historique de conversation')
-                .setRequired(false)
-        ),
+    name: 'messageCreate',
+    
+    async execute(message) {
+        // Ignorer les bots
+        if (message.author.bot) return;
 
-    async execute(interaction) {
+        // Vérifier si le bot est mentionné
+        if (!message.mentions.has(message.client.user)) return;
+
         try {
-            const question = interaction.options.getString('question');
-            const reset = interaction.options.getBoolean('reset');
+            const userId = message.author.id;
+            const userTag = message.author.tag;
+            
+            // Récupérer le contenu sans la mention
+            let content = message.content
+                .replace(/<@!?\d+>/g, '') // Retire toutes les mentions
+                .trim();
 
-            // Réinitialiser l'historique si demandé
-            if (reset) {
-                AIservices.clearHistory(interaction.user.id);
-                await interaction.reply({
-                    content: '🔄 Historique réinitialisé ! Posez votre question.',
-                    ephemeral: true
-                });
+            // Si mention vide
+            if (!content) {
+                await message.reply('👋 Salut ! Pose-moi une question après m\'avoir mentionné !');
                 return;
             }
 
-            // Indiquer que le bot réfléchit
-            await interaction.deferReply();
+            // Commandes spéciales
+            if (['reset', 'clear', 'effacer'].includes(content.toLowerCase())) {
+                AIservices.clearHistory(userId);
+                logger.info(`🔄 Historique réinitialisé pour ${userTag}`);
+                await message.reply('🔄 **Historique effacé !** On repart de zéro.');
+                return;
+            }
 
-            logger.info(`Question posée par ${interaction.user.tag}: ${question}`);
+            if (['aide', 'help', '?'].includes(content.toLowerCase())) {
+                await message.reply(
+                    '**🤖 Comment m\'utiliser :**\n' +
+                    '• Mentionne-moi + ta question\n' +
+                    '• Je garde l\'historique de nos conversations\n' +
+                    '• Commandes : `reset`, `aide`'
+                );
+                return;
+            }
 
-            // Obtenir la réponse
-            const response = await AIservices.getResponse(
-                interaction.user.id,
-                question,
-                {
-                    systemPrompt: 'Tu es un assistant IA intégré à Discord. Tu réponds de manière claire, concise et utile.',
-                    maxTokens: 800,
-                    temperature: 0.7
-                }
-            );
+            // Indiquer que le bot tape
+            await message.channel.sendTyping();
 
-            // Découper la réponse si trop longue
-            if (response.length > 2000) {
-                const chunks = response.match(/[\s\S]{1,2000}/g) || [];
-                await interaction.editReply(chunks[0]);
+            logger.info(`💬 Question de ${userTag}: "${content.substring(0, 50)}..."`);
+
+            // Obtenir la réponse de l'IA
+            const response = await AIservices.getResponse(userId, content, {
+                systemPrompt: 'Tu es un assistant Discord utile et concis. Réponds en français de manière claire.',
+                maxTokens: 800,
+                temperature: 0.7
+            });
+
+            // Envoyer la réponse (découpée si nécessaire)
+            if (response.length <= 2000) {
+                await message.reply(response);
+            } else {
+                const chunks = splitMessage(response, 2000);
+                
+                await message.reply(chunks[0]);
                 
                 for (let i = 1; i < chunks.length; i++) {
-                    await interaction.followUp(chunks[i]);
+                    await message.channel.send(chunks[i]);
                 }
-            } else {
-                await interaction.editReply(response);
+                
+                logger.info(`📄 Réponse découpée en ${chunks.length} morceaux`);
             }
 
         } catch (error) {
-            logger.error('Erreur dans la commande ask:', error);
-            
-            const errorMessage = 'Une erreur est survenue lors du traitement de votre question.';
-            
-            if (interaction.deferred) {
-                await interaction.editReply(errorMessage);
-            } else {
-                await interaction.reply({ content: errorMessage, ephemeral: true });
-            }
+            logger.error('❌ Erreur dans mentionReply:', error.message);
+            await message.reply('❌ **Erreur** : Je n\'ai pas pu traiter ta question. Réessaye.');
         }
     },
 };

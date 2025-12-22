@@ -11,7 +11,7 @@ class MammouthService {
     async getResponse(userId, userMessage, options = {}) {
         try {
             if (!this.apiKey) {
-                console.error('[ERROR] Clé API Mammouth.ai non configurée');
+                console.error('❌ Clé API Mammouth.ai non configurée');
                 return 'Configuration manquante pour Mammouth.ai';
             }
 
@@ -40,35 +40,36 @@ class MammouthService {
                 this._addToHistory(userId, 'user', userMessage);
                 this._addToHistory(userId, 'assistant', aiResponse);
                 
-                console.log(`[INFO] Réponse Mammouth générée pour l'utilisateur ${userId}`);
+                console.log(`✅ Réponse générée pour ${userId}`);
                 return aiResponse;
             } else {
-                throw new Error('Réponse invalide de l\'API Mammouth.ai');
+                throw new Error('Réponse invalide de l\'API');
             }
 
         } catch (error) {
-            console.error('[ERROR] Erreur Mammouth.ai:', error.message);
+            console.error('❌ Erreur Mammouth.ai:', error.message);
             
             if (error.response) {
-                console.error('[ERROR] Status:', error.response.status);
-                console.error('[ERROR] Data:', error.response.data);
+                console.error('Status:', error.response.status);
+                console.error('Data:', error.response.data);
             }
 
             if (error.response?.status === 401) {
-                return '🔑 Erreur d\'authentification avec l\'API. Vérifie la clé API.';
+                return '🔑 Erreur d\'authentification avec l\'API.';
             } else if (error.response?.status === 429) {
-                return '⏳ Trop de requêtes. Réessaye dans quelques instants.';
+                return '⏱️ Trop de requêtes, réessaye dans quelques secondes.';
             } else if (error.code === 'ECONNABORTED') {
-                return '⏱️ La requête a pris trop de temps. Réessaye.';
+                return '⏱️ L\'IA met trop de temps à répondre, réessaye.';
             }
-            
-            return '❌ Impossible d\'obtenir une réponse pour le moment.';
+
+            return '❌ Une erreur s\'est produite. Réessaye plus tard.';
         }
     }
 
     _buildMessages(userId, userMessage, options) {
         const messages = [];
-        
+
+        // Système prompt
         if (options.systemPrompt) {
             messages.push({
                 role: 'system',
@@ -76,9 +77,13 @@ class MammouthService {
             });
         }
 
-        const history = this.conversationHistory.get(userId) || [];
-        messages.push(...history);
-        
+        // Historique de conversation
+        if (options.useHistory !== false) {
+            const history = this.conversationHistory.get(userId) || [];
+            messages.push(...history);
+        }
+
+        // Message actuel
         messages.push({
             role: 'user',
             content: userMessage
@@ -91,24 +96,23 @@ class MammouthService {
         if (!this.conversationHistory.has(userId)) {
             this.conversationHistory.set(userId, []);
         }
-        
+
         const history = this.conversationHistory.get(userId);
         history.push({ role, content });
-        
-        const maxHistoryLength = 20;
-        if (history.length > maxHistoryLength) {
-            this.conversationHistory.set(userId, history.slice(-maxHistoryLength));
+
+        // Limite à 10 derniers messages
+        if (history.length > 10) {
+            history.shift();
         }
     }
 
     clearHistory(userId) {
         this.conversationHistory.delete(userId);
-        console.log(`[INFO] Historique effacé pour l'utilisateur ${userId}`);
+        console.log(`🗑️ Historique effacé pour ${userId}`);
     }
 
-    clearAllHistory() {
-        this.conversationHistory.clear();
-        console.log('[INFO] Tous les historiques ont été effacés');
+    getHistorySize(userId) {
+        return (this.conversationHistory.get(userId) || []).length;
     }
 }
 

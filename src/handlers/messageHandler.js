@@ -60,9 +60,13 @@ module.exports = function buildMessageHandler(client, triggerSet) {
         message.author.id,
         userMessage,
         {
-          systemPrompt: 'Réponds en français, Tu es retardOmancien, Tu es un utilisateur moyen de X : brut, violent, insultes créatives seulement. Max 15 mots. Insulte salement, défends-toi comme un loup enragé. Pas de merde mignonne, zéro conneries.',
-          maxTokens: 800,
-          temperature: 0.9
+          systemPrompt: `Serveur Discord entre potes - Vanne lourde
+          Réponds UNIQUEMENT en français, max 15 mots, une phrase punchy
+          Style: Calme mais violent`,
+          maxTokens: 30,
+          temperature: 0.75,
+          top_p: 0.85,
+          frequencyPenalty: 0.2,  // Évite les répétitions
         }
       );
 

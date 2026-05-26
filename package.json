@@ -4,7 +4,8 @@
   "main": "retard.js",
   "scripts": {
     "start": "node retard.js",
-    "slash": "node slash.js"
+    "slash": "node slash.js",
+    "redeploy": "powershell -ExecutionPolicy Bypass -File ./scripts/redeploy.ps1"
   },
   "keywords": [],
   "author": "",

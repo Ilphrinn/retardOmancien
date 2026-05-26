@@ -61,3 +61,13 @@ Optionnelles (fonctionnalités associées):
 3. Commit + push sur GitHub.
 4. Laisser Railway redéployer automatiquement.
 5. Si besoin de maj slash commands: lancer `npm run slash` avec les bonnes variables.
+
+## Redeploy rapide (terminal uniquement)
+
+Pour forcer un redeploy Railway sans passer par le web:
+
+```bash
+npm run redeploy
+```
+
+Cette commande crée un commit vide puis push sur `main`, ce qui déclenche le déploiement automatique Railway.

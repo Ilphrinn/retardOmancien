@@ -19,7 +19,7 @@ for (const file of fs.readdirSync(commandsDir).filter(f => f.endsWith('.js'))) {
   }
 }
 
-client.on('messageCreate', buildMessageHandler(client, triggers));
+client.on('messageCreate', buildMessageHandler(triggers));
 client.on('interactionCreate', buildInteractionHandler(commands));
 
 client.once('ready', () => {

@@ -15,6 +15,7 @@ const commands = [
   new SlashCommandBuilder().setName('copiepate').setDescription('Reçoit une copiepasta'),
   new SlashCommandBuilder().setName('meme').setDescription('Reçoit un meme (image ou vidéo)'),
   new SlashCommandBuilder().setName('ascii').setDescription('Envoie un ASCII random'),
+  new SlashCommandBuilder().setName('inspirobot').setDescription('Envoie une image inspirante de Inspirobot'),
   new SlashCommandBuilder()
     .setName('wiki')
     .setDescription('Lien Wikipédia lié aux derniers messages ou à une recherche')

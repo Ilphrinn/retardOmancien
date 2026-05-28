@@ -49,6 +49,8 @@ Obligatoires:
 
 Optionnelles (fonctionnalités associées):
 
+- `OPENAI_API_KEY` (requis pour réponses aux mentions du bot)
+- `OPENAI_MODEL` (optionnel, défaut: `gpt-4o-mini`)
 - `REDDIT_CLIENT_ID`
 - `REDDIT_CLIENT_SECRET`
 - `REDDIT_USERNAME`

@@ -1,6 +1,7 @@
 const clanker = require('../commands/clanker');
+const { askOpenAI } = require('../services/openai');
 
-module.exports = function buildMessageHandler(triggerSet) {
+module.exports = function buildMessageHandler(client, triggerSet) {
   return async function onMessage(message) {
     if (message.author.bot) return;
 
@@ -30,6 +31,26 @@ module.exports = function buildMessageHandler(triggerSet) {
     if (Math.random() < 0.01) { 
       message.reply("Ratio"); 
       return; 
+    }
+
+    if (!message.mentions.users.has(client.user.id)) return;
+
+    const userQuestion = message.content
+      .replace(new RegExp(`<@!?${client.user.id}>`, 'g'), '')
+      .trim();
+
+    if (!userQuestion) {
+      await message.reply("Parle, vite.");
+      return;
+    }
+
+    try {
+      await message.channel.sendTyping();
+      const answer = await askOpenAI(userQuestion);
+      await message.reply(answer);
+    } catch (err) {
+      console.error('Erreur OpenAI:', err?.message || err);
+      await message.reply("J'ai pas ton cerveau en stock.");
     }
 
   };

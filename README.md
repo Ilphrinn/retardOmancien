@@ -15,6 +15,7 @@ npm install
 ```
 
 Créer un fichier `.env` à partir de `.env.example`.
+Ce fichier est déjà ignoré par Git, donc le token ne part pas dans le dépôt.
 
 ## Lancer le bot
 
@@ -25,6 +26,14 @@ npm start
 ## Publier les commandes slash
 
 ```bash
+npm run slash
+```
+
+Si tu ne veux rien écrire sur disque, tu peux aussi injecter les variables uniquement dans la session PowerShell:
+
+```powershell
+$env:DISCORD_TOKEN="ton_token"
+$env:CLIENT_ID="ton_client_id"
 npm run slash
 ```
 
@@ -63,6 +72,7 @@ Optionnelles (fonctionnalités associées):
 3. Commit + push sur GitHub.
 4. Laisser Railway redéployer automatiquement.
 5. Si besoin de maj slash commands: lancer `npm run slash` avec les bonnes variables.
+   Les variables Railway ne sont pas disponibles automatiquement quand tu lances la commande localement.
 
 ## Redeploy rapide (terminal uniquement)
 

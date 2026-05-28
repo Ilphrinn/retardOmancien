@@ -1,11 +1,13 @@
 // Script de déploiement des commandes slash
+require('dotenv').config();
+
 const { REST, Routes, SlashCommandBuilder } = require('discord.js');
 
 // Variables d'environnement nécessaires
 const { DISCORD_TOKEN, CLIENT_ID } = process.env;
 
 if (!DISCORD_TOKEN || !CLIENT_ID) {
-  console.error("❌ DISCORD_TOKEN ou CLIENT_ID manquant dans .env");
+  console.error("❌ DISCORD_TOKEN ou CLIENT_ID manquant. En local, crée un .env ignoré par Git ou définis les variables dans PowerShell.");
   process.exit(1);
 }
 

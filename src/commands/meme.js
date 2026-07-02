@@ -5,8 +5,9 @@ module.exports = {
   async execute(interaction) {
     let meme = null;
     const maxAttempts = 5;
+    const allowNsfw = Boolean(interaction.channel?.nsfw);
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
-      meme = await fetchRandomMeme();
+      meme = await fetchRandomMeme({ allowNsfw });
       if (meme) break;
     }
 

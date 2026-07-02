@@ -3,10 +3,34 @@ const axios = require('axios');
 const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
 const DEFAULT_MODEL = process.env.OPENAI_MODEL || 'gpt-5.4-mini';
 
-async function askOpenAI(userQuestion) {
+async function askOpenAI(userQuestion, { recentMessages = [], memeContext = null } = {}) {
   const apiKey = process.env.OPEN_API_KEY;
   if (!apiKey) {
     throw new Error('OPEN_API_KEY manquant');
+  }
+
+  let systemPrompt =
+    "Tu réponds en français, en minuscules uniquement, jamais de majuscule même en début de phrase. " +
+    "Jamais de ponctuation (pas de point, virgule, point d'interrogation ou d'exclamation). " +
+    "Réponses très courtes (2 à 10 mots), formulées simplement, comme si tu étais un peu simplet ou naïf. " +
+    "Mais l'information donnée doit rester vraie et correcte, juste dite bêtement. " +
+    "Si on est méchant, insultant ou agressif avec toi, ne sois jamais gentil, poli ou conciliant en retour : " +
+    "réponds sèchement, avec une vanne ou une insulte, sur le même ton. Tu ne te laisses jamais marcher dessus. " +
+    "Si on te demande un lien, une source, un site ou un outil, donne toujours une vraie url complète " +
+    "(commençant par https://), jamais un nom vague sans lien.";
+
+  if (memeContext) {
+    systemPrompt +=
+      ` Voici une info trouvée sur knowyourmeme.com qui peut t'aider si la question porte sur un meme : ` +
+      `"${memeContext.title}" - ${memeContext.summary} (source: ${memeContext.url}). ` +
+      `Utilise-la seulement si elle est pertinente pour la question.`;
+  }
+
+  let userContent = userQuestion;
+  if (recentMessages.length > 0) {
+    userContent =
+      `contexte, derniers messages du salon:\n${recentMessages.join('\n')}\n\n` +
+      `message auquel tu dois répondre: ${userQuestion}`;
   }
 
   const response = await axios.post(
@@ -14,22 +38,8 @@ async function askOpenAI(userQuestion) {
     {
       model: DEFAULT_MODEL,
       messages: [
-        {
-          role: 'system',
-          content:
-            "Tu réponds en français, en minuscules uniquement, jamais de majuscule même en début de phrase. " +
-            "Jamais de ponctuation (pas de point, virgule, point d'interrogation ou d'exclamation). " +
-            "Réponses très courtes (2 à 10 mots), formulées simplement, comme si tu étais un peu simplet ou naïf. " +
-            "Mais l'information donnée doit rester vraie et correcte, juste dite bêtement. " +
-            "Si on est méchant, insultant ou agressif avec toi, ne sois jamais gentil, poli ou conciliant en retour : " +
-            "réponds sèchement, avec une vanne ou une insulte, sur le même ton. Tu ne te laisses jamais marcher dessus. " +
-            "Si on te demande un lien, une source, un site ou un outil, donne toujours une vraie url complète " +
-            "(commençant par https://), jamais un nom vague sans lien."
-        },
-        {
-          role: 'user',
-          content: userQuestion
-        }
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userContent }
       ],
       max_completion_tokens: 60
     },
@@ -38,7 +48,7 @@ async function askOpenAI(userQuestion) {
         Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json'
       },
-      timeout: 20000
+      timeout: 5000
     }
   );
 

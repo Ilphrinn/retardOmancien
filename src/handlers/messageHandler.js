@@ -1,5 +1,25 @@
 const clanker = require('../commands/clanker');
 const { askOpenAI } = require('../services/openai');
+const { lookupMeme } = require('../services/knowyourmeme');
+
+function withTimeout(promise, ms, fallback) {
+  return Promise.race([
+    promise,
+    new Promise(resolve => setTimeout(() => resolve(fallback), ms))
+  ]);
+}
+
+async function fetchRecentMessages(channel, excludeId) {
+  try {
+    const history = await channel.messages.fetch({ limit: 5 });
+    return [...history.values()]
+      .filter(m => m.id !== excludeId && m.content)
+      .reverse()
+      .map(m => `${m.author.username}: ${m.content.slice(0, 150)}`);
+  } catch {
+    return [];
+  }
+}
 
 module.exports = function buildMessageHandler(client, triggerSet) {
   return async function onMessage(message) {
@@ -46,7 +66,11 @@ module.exports = function buildMessageHandler(client, triggerSet) {
 
     try {
       await message.channel.sendTyping();
-      const answer = await askOpenAI(userQuestion);
+      const [recentMessages, memeContext] = await Promise.all([
+        fetchRecentMessages(message.channel, message.id),
+        withTimeout(lookupMeme(userQuestion), 4000, null)
+      ]);
+      const answer = await askOpenAI(userQuestion, { recentMessages, memeContext });
       await message.reply(answer);
     } catch (err) {
       console.error('Erreur OpenAI:', err?.response?.data ? JSON.stringify(err.response.data) : (err?.message || err));

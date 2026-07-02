@@ -12,7 +12,7 @@ function withTimeout(promise, ms, fallback) {
 
 async function fetchRecentMessages(channel, excludeId) {
   try {
-    const history = await channel.messages.fetch({ limit: 5 });
+    const history = await channel.messages.fetch({ limit: 10 });
     return [...history.values()]
       .filter(m => m.id !== excludeId && m.content)
       .reverse()

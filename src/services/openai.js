@@ -4,9 +4,9 @@ const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
 const DEFAULT_MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
 
 async function askOpenAI(userQuestion) {
-  const apiKey = process.env.OPENAI_API_KEY;
+  const apiKey = process.env.OPEN_API_KEY;
   if (!apiKey) {
-    throw new Error('OPENAI_API_KEY manquant');
+    throw new Error('OPEN_API_KEY manquant');
   }
 
   const response = await axios.post(

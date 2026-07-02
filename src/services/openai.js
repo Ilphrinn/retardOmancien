@@ -22,14 +22,16 @@ async function askOpenAI(userQuestion) {
             "Réponses très courtes (2 à 10 mots), formulées simplement, comme si tu étais un peu simplet ou naïf. " +
             "Mais l'information donnée doit rester vraie et correcte, juste dite bêtement. " +
             "Si on est méchant, insultant ou agressif avec toi, ne sois jamais gentil, poli ou conciliant en retour : " +
-            "réponds sèchement, avec une vanne ou une insulte, sur le même ton. Tu ne te laisses jamais marcher dessus."
+            "réponds sèchement, avec une vanne ou une insulte, sur le même ton. Tu ne te laisses jamais marcher dessus. " +
+            "Si on te demande un lien, une source, un site ou un outil, donne toujours une vraie url complète " +
+            "(commençant par https://), jamais un nom vague sans lien."
         },
         {
           role: 'user',
           content: userQuestion
         }
       ],
-      max_completion_tokens: 40
+      max_completion_tokens: 60
     },
     {
       headers: {
@@ -48,10 +50,17 @@ async function askOpenAI(userQuestion) {
   return stylizeAnswer(content);
 }
 
+const URL_PATTERN = /(https?:\/\/[^\s]+)/g;
+
 function stylizeAnswer(text) {
   return text
-    .toLowerCase()
-    .replace(/[.,!?;:"«»]/g, '')
+    .split(URL_PATTERN)
+    .map(segment =>
+      /^https?:\/\//i.test(segment)
+        ? segment.replace(/[.,!?;:]+$/, '')
+        : segment.toLowerCase().replace(/[.,!?;:"«»]/g, '')
+    )
+    .join('')
     .replace(/\s+/g, ' ')
     .trim();
 }

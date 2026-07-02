@@ -39,7 +39,7 @@ function scheduleWeeklyVideo(client) {
   setInterval(() => {
     const now = new Date();
     const { weekday, hour, minute } = getParisParts(now);
-    if (weekday !== 'Wed' || hour !== '00' || minute !== '01') return;
+    if (weekday !== 'Wed' || hour !== '12' || minute !== '00') return;
 
     const key = `${now.getUTCFullYear()}-${now.getUTCMonth()}-${now.getUTCDate()}`;
     if (lastTriggeredKey === key) return;
@@ -50,7 +50,7 @@ function scheduleWeeklyVideo(client) {
     );
   }, CHECK_INTERVAL_MS);
 
-  console.log(`🕐 Envoi hebdomadaire programmé chaque mercredi à 00:01 (Europe/Paris) dans le salon ${CHANNEL_ID}.`);
+  console.log(`🕐 Envoi hebdomadaire programmé chaque mercredi à 12:00 (Europe/Paris) dans le salon ${CHANNEL_ID}.`);
 }
 
 module.exports = { scheduleWeeklyVideo };

@@ -2,6 +2,9 @@
   "name": "retardomancien",
   "version": "1.0.0",
   "main": "retard.js",
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "start": "node retard.js",
     "slash": "node slash.js",

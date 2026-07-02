@@ -1,3 +1,9 @@
+if (typeof globalThis.File === 'undefined') {
+  try {
+    globalThis.File = require('node:buffer').File;
+  } catch {}
+}
+
 require('dotenv').config();
 
 const { Client } = require('discord.js');

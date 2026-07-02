@@ -17,7 +17,10 @@ async function askOpenAI(userQuestion) {
         {
           role: 'system',
           content:
-            "Tu réponds en français. Réponses ultra courtes (2 à 12 mots), style cru, sec, direct. Pas de pavé."
+            "Tu réponds en français, en minuscules uniquement, jamais de majuscule même en début de phrase. " +
+            "Jamais de ponctuation (pas de point, virgule, point d'interrogation ou d'exclamation). " +
+            "Réponses très courtes (2 à 10 mots), formulées simplement, comme si tu étais un peu simplet ou naïf. " +
+            "Mais l'information donnée doit rester vraie et correcte, juste dite bêtement."
         },
         {
           role: 'user',
@@ -25,7 +28,7 @@ async function askOpenAI(userQuestion) {
         }
       ],
       max_tokens: 40,
-      temperature: 0.8
+      temperature: 0.7
     },
     {
       headers: {
@@ -41,7 +44,15 @@ async function askOpenAI(userQuestion) {
     throw new Error('Réponse OpenAI vide');
   }
 
-  return content;
+  return stylizeAnswer(content);
+}
+
+function stylizeAnswer(text) {
+  return text
+    .toLowerCase()
+    .replace(/[.,!?;:"«»]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 module.exports = { askOpenAI };

@@ -40,7 +40,7 @@ module.exports = function buildMessageHandler(client, triggerSet) {
       .trim();
 
     if (!userQuestion) {
-      await message.reply("Parle, vite.");
+      await message.reply("parle vite");
       return;
     }
 
@@ -50,7 +50,7 @@ module.exports = function buildMessageHandler(client, triggerSet) {
       await message.reply(answer);
     } catch (err) {
       console.error('Erreur OpenAI:', err?.message || err);
-      await message.reply("J'ai pas ton cerveau en stock.");
+      await message.reply("j'ai pas ton cerveau en stock");
     }
 
   };

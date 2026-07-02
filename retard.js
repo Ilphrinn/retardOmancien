@@ -7,6 +7,7 @@ const client = new Client({ intents });
 
 const buildMessageHandler = require('./src/handlers/messageHandler');
 const buildInteractionHandler = require('./src/handlers/interactionHandler');
+const { scheduleWeeklyVideo } = require('./src/services/scheduler');
 
 const fs = require('fs');
 const path = require('path');
@@ -26,6 +27,7 @@ client.on('interactionCreate', buildInteractionHandler(commands));
 
 client.once('ready', () => {
   console.log('Le retardOmancien est en ligne !');
+  scheduleWeeklyVideo(client);
 });
 
 client.login(process.env.DISCORD_TOKEN);

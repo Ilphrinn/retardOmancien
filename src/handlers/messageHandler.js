@@ -49,7 +49,7 @@ module.exports = function buildMessageHandler(client, triggerSet) {
       const answer = await askOpenAI(userQuestion);
       await message.reply(answer);
     } catch (err) {
-      console.error('Erreur OpenAI:', err?.message || err);
+      console.error('Erreur OpenAI:', err?.response?.data ? JSON.stringify(err.response.data) : (err?.message || err));
       await message.reply("j'ai pas ton cerveau en stock");
     }
 

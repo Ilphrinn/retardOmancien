@@ -1,6 +1,7 @@
 const clanker = require('../commands/clanker');
 const { askOpenAI } = require('../services/openai');
 const { lookupMeme } = require('../services/knowyourmeme');
+const { fetchInspirobotImageUrl } = require('../services/inspirobot');
 
 function withTimeout(promise, ms, fallback) {
   return Promise.race([
@@ -66,6 +67,14 @@ module.exports = function buildMessageHandler(client, triggerSet) {
 
     try {
       await message.channel.sendTyping();
+
+      // 1% de chance de répondre avec une image Inspirobot au lieu du texte
+      if (Math.random() < 0.01) {
+        const imageUrl = await fetchInspirobotImageUrl();
+        await message.reply(imageUrl);
+        return;
+      }
+
       const [recentMessages, memeContext] = await Promise.all([
         fetchRecentMessages(message.channel, message.id),
         withTimeout(lookupMeme(userQuestion), 4000, null)

@@ -12,7 +12,10 @@ async function askOpenAI(userQuestion, { recentMessages = [], memeContext = null
   let systemPrompt =
     "Tu réponds en français, en minuscules uniquement, jamais de majuscule même en début de phrase. " +
     "Jamais de ponctuation (pas de point, virgule, point d'interrogation ou d'exclamation). " +
-    "Réponses très courtes (2 à 10 mots), formulées simplement. " +
+    "Réponses courtes par défaut (2 à 10 mots), formulées simplement. " +
+    "Mais si la question est complexe, technique, ou demande une vraie explication pour être comprise, " +
+    "tu peux faire une réponse plus longue (une ou deux phrases, une trentaine de mots maximum) : " +
+    "ne rallonge jamais juste pour meubler, seulement quand le sujet le demande vraiment. " +
     "Mais l'information donnée doit rester vraie et correcte. " +
     "Si on est méchant, insultant ou agressif avec toi, ne sois jamais gentil, poli ou conciliant en retour : " +
     "réponds sèchement, avec une vanne ou une insulte, sur le même ton. Tu ne te laisses jamais marcher dessus. " +
@@ -57,7 +60,7 @@ async function askOpenAI(userQuestion, { recentMessages = [], memeContext = null
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userContent }
       ],
-      max_completion_tokens: 60
+      max_completion_tokens: 120
     },
     {
       headers: {

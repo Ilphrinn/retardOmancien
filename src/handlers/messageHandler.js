@@ -22,6 +22,14 @@ async function fetchRecentMessages(channel, excludeId) {
   }
 }
 
+function pickRandomEmojis(guild, count) {
+  if (!guild) return [];
+  const emojis = [...guild.emojis.cache.values()];
+  if (emojis.length === 0) return [];
+  const shuffled = emojis.sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, count).map(e => `<${e.animated ? 'a' : ''}:${e.name}:${e.id}>`);
+}
+
 module.exports = function buildMessageHandler(client, triggerSet) {
   return async function onMessage(message) {
     if (message.author.bot) return;
@@ -83,7 +91,8 @@ module.exports = function buildMessageHandler(client, triggerSet) {
         fetchRecentMessages(message.channel, message.id),
         withTimeout(lookupMeme(userQuestion), 4000, null)
       ]);
-      const answer = await askOpenAI(userQuestion, { recentMessages, memeContext });
+      const availableEmojis = Math.random() < 0.25 ? pickRandomEmojis(message.guild, 6) : [];
+      const answer = await askOpenAI(userQuestion, { recentMessages, memeContext, availableEmojis });
       await message.reply(answer);
     } catch (err) {
       console.error('Erreur OpenAI:', err?.response?.data ? JSON.stringify(err.response.data) : (err?.message || err));

@@ -3,7 +3,7 @@ const axios = require('axios');
 const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
 const DEFAULT_MODEL = process.env.OPENAI_MODEL || 'gpt-5.4-mini';
 
-async function askOpenAI(userQuestion, { recentMessages = [], memeContext = null } = {}) {
+async function askOpenAI(userQuestion, { recentMessages = [], memeContext = null, availableEmojis = [] } = {}) {
   const apiKey = process.env.OPEN_API_KEY;
   if (!apiKey) {
     throw new Error('OPEN_API_KEY manquant');
@@ -33,6 +33,13 @@ async function askOpenAI(userQuestion, { recentMessages = [], memeContext = null
       ` Voici une info trouvée sur knowyourmeme.com qui peut t'aider si la question porte sur un meme : ` +
       `"${memeContext.title}" - ${memeContext.summary} (source: ${memeContext.url}). ` +
       `Utilise-la seulement si elle est pertinente pour la question.`;
+  }
+
+  if (availableEmojis.length > 0) {
+    systemPrompt +=
+      ` Tu as accès à ces emojis discord du serveur : ${availableEmojis.join(' ')}. ` +
+      `Tu peux en utiliser un seul, occasionnellement, si ça colle vraiment bien au message (souvent tu n'en mets aucun, n'en abuse pas). ` +
+      `Utilise-les tel quel copié-collé, jamais un autre nom d'emoji, jamais inventé.`;
   }
 
   let userContent = userQuestion;
@@ -69,16 +76,16 @@ async function askOpenAI(userQuestion, { recentMessages = [], memeContext = null
   return stylizeAnswer(content);
 }
 
-const URL_PATTERN = /(https?:\/\/[^\s]+)/g;
+const PRESERVE_PATTERN = /(https?:\/\/[^\s]+|<a?:[a-zA-Z0-9_]+:\d+>)/g;
 
 function stylizeAnswer(text) {
   return text
-    .split(URL_PATTERN)
-    .map(segment =>
-      /^https?:\/\//i.test(segment)
-        ? segment.replace(/[.,!?;:]+$/, '')
-        : segment.toLowerCase().replace(/[.,!?;:"«»]/g, '')
-    )
+    .split(PRESERVE_PATTERN)
+    .map(segment => {
+      if (/^https?:\/\//i.test(segment)) return segment.replace(/[.,!?;:]+$/, '');
+      if (/^<a?:[a-zA-Z0-9_]+:\d+>$/.test(segment)) return segment;
+      return segment.toLowerCase().replace(/[.,!?;:"«»]/g, '');
+    })
     .join('')
     .replace(/\s+/g, ' ')
     .trim();

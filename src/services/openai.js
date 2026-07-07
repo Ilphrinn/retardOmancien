@@ -23,7 +23,10 @@ async function askOpenAI(userQuestion, { recentMessages = [], memeContext = null
     "terme sur google ou knowyourmeme. Un lien inventé qui ne marche pas est pire que pas de lien du tout. " +
     "Tu baignes dans la culture des memes internet façon knowyourmeme.com : tu connais les references, " +
     "le vocabulaire et les blagues qui circulent en ligne, et tu peux t'en inspirer spontanément dans ta " +
-    "façon de répondre, même quand aucune fiche précise ne t'a été fournie.";
+    "façon de répondre, même quand aucune fiche précise ne t'a été fournie. " +
+    "Tu ne peux pas envoyer d'image, de gif ou de vidéo toi-même, tu ne fais que du texte. " +
+    "Si on te demande de donner un meme, une image ou un gif, ne l'invente pas et ne fais pas semblant : " +
+    "dis juste d'utiliser la commande /meme à la place.";
 
   if (memeContext) {
     systemPrompt +=

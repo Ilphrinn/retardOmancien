@@ -1,8 +1,11 @@
 const axios = require('axios');
 
+const USER_AGENT = 'retardOmancien-DiscordBot/1.0 (https://github.com/Ilphrinn/retardOmancien)';
+
 async function searchFirstLink(query) {
   const { data } = await axios.get('https://fr.wikipedia.org/w/api.php', {
     params: { action: 'query', list: 'search', srsearch: query, format: 'json' },
+    headers: { 'User-Agent': USER_AGENT }
   });
   const results = data?.query?.search;
   if (!results || results.length === 0) return null;

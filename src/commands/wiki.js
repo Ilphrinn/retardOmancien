@@ -1,4 +1,4 @@
-const { searchFirstLink, searchAnyLinkFromCorpus } = require('../services/wiki');
+const { searchFirstLink, searchAnyLinkFromCorpus, getRandomPage } = require('../services/wiki');
 
 module.exports = {
   name: 'wiki',
@@ -11,6 +11,9 @@ module.exports = {
       const fetched = await interaction.channel.messages.fetch({ limit: 5 });
       const corpus = [...fetched.values()].map(m=>m.content).join(' ');
       link = await searchAnyLinkFromCorpus(corpus);
+    }
+    if (!link) {
+      link = await getRandomPage();
     }
     await interaction.channel.send(link || "Aucun article trouvé.");
   }

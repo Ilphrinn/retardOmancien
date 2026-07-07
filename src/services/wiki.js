@@ -13,6 +13,16 @@ async function searchFirstLink(query) {
   return `https://fr.wikipedia.org/wiki/${page.title.replace(/ /g, '_')}`;
 }
 
+async function getRandomPage() {
+  const { data } = await axios.get('https://fr.wikipedia.org/w/api.php', {
+    params: { action: 'query', list: 'random', rnnamespace: 0, rnlimit: 1, format: 'json' },
+    headers: { 'User-Agent': USER_AGENT }
+  });
+  const page = data?.query?.random?.[0];
+  if (!page) return null;
+  return `https://fr.wikipedia.org/wiki/${page.title.replace(/ /g, '_')}`;
+}
+
 async function searchAnyLinkFromCorpus(corpus) {
   const text = corpus.toLowerCase();
   const words = text.match(/[a-zà-ÿ]+/g);
@@ -24,4 +34,4 @@ async function searchAnyLinkFromCorpus(corpus) {
   return searchFirstLink(keyword);
 }
 
-module.exports = { searchFirstLink, searchAnyLinkFromCorpus };
+module.exports = { searchFirstLink, searchAnyLinkFromCorpus, getRandomPage };

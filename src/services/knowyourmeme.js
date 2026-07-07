@@ -25,15 +25,36 @@ async function findTopResult(query) {
   };
 }
 
+async function findRandomResult() {
+  const { data } = await axios.get(`${BASE_URL}/memes/popular`, {
+    headers: HEADERS,
+    timeout: REQUEST_TIMEOUT
+  });
+
+  const $ = cheerio.load(data);
+  const items = $('a.item[data-title]').toArray();
+  if (items.length === 0) return null;
+
+  const el = $(items[Math.floor(Math.random() * items.length)]);
+  const href = el.attr('href');
+  if (!href) return null;
+
+  return {
+    title: el.attr('data-title'),
+    url: href.startsWith('http') ? href : `${BASE_URL}${href}`
+  };
+}
+
 async function fetchSummary(url) {
   const { data } = await axios.get(url, { headers: HEADERS, timeout: REQUEST_TIMEOUT });
   const $ = cheerio.load(data);
 
   const description = $('meta[name="description"]').attr('content');
   const title = $('meta[property="og:title"]').attr('content')?.replace(/\s*\|\s*Know Your Meme\s*$/i, '');
+  const image = $('meta[property="og:image"]').attr('content');
 
   if (!description) return null;
-  return { title: title || null, summary: description.trim() };
+  return { title: title || null, summary: description.trim(), image: image || null };
 }
 
 async function lookupMeme(query) {
@@ -55,4 +76,24 @@ async function lookupMeme(query) {
   }
 }
 
-module.exports = { lookupMeme };
+async function getMemeFact(query) {
+  try {
+    const top = query ? await findTopResult(query) : await findRandomResult();
+    if (!top) return null;
+
+    const details = await fetchSummary(top.url);
+    if (!details) return null;
+
+    return {
+      title: details.title || top.title,
+      summary: details.summary,
+      url: top.url,
+      image: details.image
+    };
+  } catch (err) {
+    console.warn('Echec récupération fact KnowYourMeme :', err?.message || err);
+    return null;
+  }
+}
+
+module.exports = { lookupMeme, getMemeFact };

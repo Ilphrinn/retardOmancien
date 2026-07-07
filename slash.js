@@ -27,6 +27,15 @@ const commands = [
         .setDescription('Terme à rechercher sur Wikipédia')
         .setRequired(false)
     ),
+  new SlashCommandBuilder()
+    .setName('knowyourmeme')
+    .setDescription('Balance un fact de meme (image + résumé) depuis knowyourmeme.com')
+    .addStringOption(option =>
+      option
+        .setName('recherche')
+        .setDescription('Meme à chercher (sinon un meme popular au hasard)')
+        .setRequired(false)
+    ),
 ].map(cmd => cmd.toJSON());
 
 const rest = new REST({ version: '10' }).setToken(DISCORD_TOKEN);

@@ -49,9 +49,20 @@ module.exports = function buildMessageHandler(client, triggerSet) {
     }
 
     // 1% de chance de dire "Ratio"
-    if (Math.random() < 0.01) { 
-      message.reply("Ratio"); 
-      return; 
+    if (Math.random() < 0.01) {
+      message.reply("Ratio");
+      return;
+    }
+
+    // 1% de chance de répondre avec une image Inspirobot
+    if (Math.random() < 0.01) {
+      try {
+        const imageUrl = await fetchInspirobotImageUrl();
+        await message.reply(imageUrl);
+      } catch (err) {
+        console.error('Erreur Inspirobot :', err?.message || err);
+      }
+      return;
     }
 
     if (!message.mentions.users.has(client.user.id)) return;
@@ -67,13 +78,6 @@ module.exports = function buildMessageHandler(client, triggerSet) {
 
     try {
       await message.channel.sendTyping();
-
-      // 1% de chance de répondre avec une image Inspirobot au lieu du texte
-      if (Math.random() < 0.01) {
-        const imageUrl = await fetchInspirobotImageUrl();
-        await message.reply(imageUrl);
-        return;
-      }
 
       const [recentMessages, memeContext] = await Promise.all([
         fetchRecentMessages(message.channel, message.id),

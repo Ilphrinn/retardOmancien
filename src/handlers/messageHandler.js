@@ -28,8 +28,8 @@ module.exports = function buildMessageHandler(client, triggerSet) {
 
     const normalizedContent = message.content.toLowerCase();
 
-    // 1.5% de chance de dire "Ta gueule"
-    if (Math.random() < 0.015) { 
+    // 0.75% de chance de dire "Ta gueule"
+    if (Math.random() < 0.0075) {
       message.reply("Ta gueule"); 
       return; 
     }

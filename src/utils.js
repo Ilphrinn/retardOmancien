@@ -4,6 +4,8 @@
  * ============================================
  */
 
+const { MessageFlags } = require('discord.js');
+
 /**
  * Découpe un message en morceaux pour respecter les limites Discord
  * @param {string} str - Le texte à découper
@@ -30,7 +32,7 @@ const randomItem = arr => arr[Math.floor(Math.random() * arr.length)];
  * @param {Interaction} interaction - L'interaction Discord
  */
 async function acknowledge(interaction) {
-  await interaction.deferReply({ ephemeral: true });
+  await interaction.deferReply({ flags: MessageFlags.Ephemeral });
   await interaction.deleteReply();
 }
 
